@@ -6,33 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Product with Allergens</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .allergen-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .form-check {
-            width: 45%;
-        }
-
-        .selected-allergen {
-            display: flex;
-            align-items: center;
-            margin: 5px 0;
-        }
-
-        .cross {
-            margin-left: 10px;
-            cursor: pointer;
-            color: red;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
 </head>
 
-<body>
+<body class="centered">
     <div class="container mt-5">
         <h1 class="mb-4">Add Product with Allergens</h1>
         <form id="productForm">
@@ -64,8 +42,8 @@
         </form>
         <div id="message" class="mt-3"></div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script>
         let allergensList = [];
 

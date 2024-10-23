@@ -4,6 +4,7 @@ const cors = require("cors");
 const sql = require("mssql");
 const path = require("path"); // Import path for serving HTML files
 require("dotenv").config({ path: "./.env" });
+const session = require('express-session');
 
 const app = express();
 const port = 3000;
@@ -22,6 +23,19 @@ const config = {
     trustServerCertificate: process.env.DB_TRUST_CERTIFICATE === "true",
   },
 };
+
+app.use(session({
+  secret: 'your_secret_key', // Replace with a strong secret
+  resave: false,              // Do not save session if unmodified
+  saveUninitialized: false,   // Do not create a session until something is stored
+  cookie: {
+      httpOnly: true,         // Prevents client-side access to the cookie
+      secure: false,          // Set to true if using HTTPS
+      // Do not set maxAge or expires to ensure it's a session cookie
+  }
+}));
+
+
 
 // Connect to SQL Server
 sql
@@ -70,7 +84,16 @@ sql
         res.status(500).send("Error retrieving categories");
       }
     });
-
+    app.post("/logout", (req, res) => {
+      req.session.destroy(err => {
+          if (err) {
+              return res.status(500).send("Error logging out");
+          }
+          res.clearCookie('connect.sid'); // Clear the cookie if necessary
+          res.status(200).send("Logged out successfully");
+      });
+  });
+  
     // Get products listed with allergens
     app.get("/products-listed", async (req, res) => {
       try {
@@ -97,53 +120,89 @@ sql
       }
     });
 
-    // Serve HTML file on root route
-    app.get("/login", (req, res) => {
-      res.sendFile(path.join(__dirname, "public", "login.html"));
-    });
+
     app.post("/login", async (req, res) => {
       const { username, password } = req.body;
-
+      
+      console.log("Received login attempt:", { username, password });
+    
       if (!username || !password) {
-        console.log("Missing username or password");
         return res.status(400).send("Username and password are required");
       }
-
+    
       try {
         const result = await pool
           .request()
           .input("username", sql.VarChar, username)
           .query("SELECT * FROM Uzivatel WHERE Email = @username");
-
+    
+        console.log("Query result:", result.recordset);
+    
         if (result.recordset.length > 0) {
           const user = result.recordset[0];
-
+    
           if (user.Heslo === password) {
-            res.redirect('/product-add'); // Redirect to /product-add on successful login
+            req.session.userId = user.UzivatelID; // Make sure this matches your query
+            req.session.role = user.RoleID; // Ensure this matches your query
+            
+            console.log('Session after login:', req.session);
+            return res.status(200).send("Login successful");
           } else {
-            console.log("Password mismatch");
-            res.status(401).send("Invalid username or password");
+            return res.status(401).send("Invalid username or password");
           }
         } else {
-          console.log("No user found with that username");
-          res.status(401).send("Invalid username or password");
+          return res.status(401).send("Invalid username or password");
         }
       } catch (err) {
         console.error("Error during login:", err);
-        res.status(500).send("Error processing login request");
+        return res.status(500).send("Error processing login request");
       }
     });
+    
 
-    app.get("/product-add", (req, res) => {
+    // Middleware to check if user is authenticated
+    // Middleware to check if user is authenticated
+    // Middleware to check if user is authenticated
+    const isAuthenticated = (req, res, next) => {
+      console.log('Session data:', req.session); // Log the session data
+      if (req.session && req.session.userId) {
+        console.log('User is authenticated');
+        return next(); // Proceed to the next middleware/route handler
+      } else {
+        console.log('User is not authenticated, redirecting to login');
+        return res.redirect('/login'); // Redirect to login if not authenticated
+      }
+    };
+
+
+    // Middleware to check if the user has one of multiple roles
+    const hasRole = (roles) => {
+      return (req, res, next) => {
+        if (req.session.role && roles.includes(req.session.role)) {
+          return next();
+        }
+        res.status(403).send("Forbidden: You do not have access to this page");
+      };
+    };
+
+    app.get("/product-add", isAuthenticated, (req, res) => {
       res.sendFile(path.join(__dirname, "public", "product_add.html"));
     });
 
-    app.get("/user-add", (req, res) => {
+    app.get("/user-add", isAuthenticated, (req, res) => {
       res.sendFile(path.join(__dirname, "public", "user_add.html"));
     });
     // Serve products list HTML page
-    app.get("/products-list", (req, res) => {
+    app.get("/products-list", isAuthenticated, (req, res) => {
       res.sendFile(path.join(__dirname, "public", "products_list.html"));
+    });
+    app.get("/", isAuthenticated, (req, res) => {
+      res.sendFile(path.join(__dirname, "public", "index.html"));
+    });
+
+    // Serve HTML file on root route
+    app.get("/login", (req, res) => {
+      res.sendFile(path.join(__dirname, "public", "login.html"));
     });
 
     // Add a product with allergens
