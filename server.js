@@ -29,9 +29,9 @@ app.use(session({
   resave: false,              // Do not save session if unmodified
   saveUninitialized: false,   // Do not create a session until something is stored
   cookie: {
-      httpOnly: true,         // Prevents client-side access to the cookie
-      secure: false,          // Set to true if using HTTPS
-      // Do not set maxAge or expires to ensure it's a session cookie
+    httpOnly: true,         // Prevents client-side access to the cookie
+    secure: false,          // Set to true if using HTTPS
+    // Do not set maxAge or expires to ensure it's a session cookie
   }
 }));
 
@@ -86,14 +86,14 @@ sql
     });
     app.post("/logout", (req, res) => {
       req.session.destroy(err => {
-          if (err) {
-              return res.status(500).send("Error logging out");
-          }
-          res.clearCookie('connect.sid'); // Clear the cookie if necessary
-          res.status(200).send("Logged out successfully");
+        if (err) {
+          return res.status(500).send("Error logging out");
+        }
+        res.clearCookie('connect.sid'); // Clear the cookie if necessary
+        res.status(200).send("Logged out successfully");
       });
-  });
-  
+    });
+
     // Get products listed with allergens
     app.get("/products-listed", async (req, res) => {
       try {
@@ -123,28 +123,28 @@ sql
 
     app.post("/login", async (req, res) => {
       const { username, password } = req.body;
-      
+
       console.log("Received login attempt:", { username, password });
-    
+
       if (!username || !password) {
         return res.status(400).send("Username and password are required");
       }
-    
+
       try {
         const result = await pool
           .request()
           .input("username", sql.VarChar, username)
           .query("SELECT * FROM Uzivatel WHERE Email = @username");
-    
+
         console.log("Query result:", result.recordset);
-    
+
         if (result.recordset.length > 0) {
           const user = result.recordset[0];
-    
+
           if (user.Heslo === password) {
             req.session.userId = user.UzivatelID; // Make sure this matches your query
             req.session.role = user.RoleID; // Ensure this matches your query
-            
+
             console.log('Session after login:', req.session);
             return res.status(200).send("Login successful");
           } else {
@@ -158,7 +158,7 @@ sql
         return res.status(500).send("Error processing login request");
       }
     });
-    
+
 
     // Middleware to check if user is authenticated
     // Middleware to check if user is authenticated
