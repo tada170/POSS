@@ -51,6 +51,7 @@ label {
 input[type="text"],
 input[type="email"],
 input[type="password"],
+input[type="number"],
 select,
 .form-control {
     width: 100%;
@@ -121,8 +122,6 @@ ul button:hover {
     background-color: #0056b3;
     color: #f8f9fa;
 }
-
-
 
 /* Alert Messages */
 .alert {
