@@ -309,23 +309,53 @@ sql
     // Delete a product
     app.delete("/products/:id", async (req, res) => {
       const productId = req.params.id; // Get the product ID from the request parameters
-
+    
+      let transaction; // Declare the transaction variable outside to use it in catch block
+    
       try {
-        const deleteProduct = await pool
+        // Begin a transaction
+        transaction = new sql.Transaction(pool);
+        await transaction.begin();
+        console.log(`Started transaction for product ID ${productId}`);
+    
+        // Delete any records in PolozkaTransakce that reference the product
+        await transaction
+          .request()
+          .input("ProduktID", sql.Int, productId)
+          .query("DELETE FROM PolozkaTransakce WHERE ProduktID = @ProduktID"); // Clear existing references
+        console.log(`Cleared references in PolozkaTransakce for product ID ${productId}`);
+    
+        // Delete any allergens associated with the product
+        await transaction
+          .request()
+          .input("ProduktID", sql.Int, productId)
+          .query("DELETE FROM ProduktAlergen WHERE ProduktID = @ProduktID"); // Clear existing allergens
+        console.log(`Cleared allergens for product ID ${productId}`);
+    
+        // Now delete the product itself
+        const deleteProduct = await transaction
           .request()
           .input("ProduktID", sql.Int, productId)
           .query("DELETE FROM Produkt WHERE ProduktID = @ProduktID"); // SQL query to delete the product
-
-        // Send a status code indicating no content
+    
+        // Check if any rows were affected
+        if (deleteProduct.rowsAffected[0] === 0) {
+          console.log(`No product found with ID ${productId}`);
+          return res.status(404).send("Product not found");
+        }
+    
+        await transaction.commit();
+        console.log(`Transaction committed successfully for product ID ${productId}`);
         res.sendStatus(204); // HTTP status code 204 means No Content
       } catch (error) {
         console.error("Error deleting product:", error);
+        if (transaction) await transaction.rollback(); // Ensure rollback if transaction is defined
         res.status(500).send("Error deleting product");
       }
     });
+    
 
-    // Update a product
-    // Update a product
+
     // Update a product
     app.put("/products/:id", async (req, res) => {
       const productId = req.params.id; // Get the product ID from the request parameters

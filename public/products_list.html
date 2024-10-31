@@ -66,10 +66,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-        // Your JavaScript code remains the same here.
-        // This includes product fetching, rendering, adding allergens, editing, and deleting functionality.
-    </script>
 </body>
 
 </html>
@@ -222,7 +218,6 @@
         });
     }
 
-
     function removeAllergen(allergenId) {
         selectedAllergens = selectedAllergens.filter(a => a.id !== allergenId); // Filter by ID
         renderSelectedAllergens(); // Refresh the list
@@ -246,8 +241,6 @@
         const modal = document.getElementById('editModal');
         modal.style.display = 'block';
     }
-
-
 
     document.getElementById('closeModal').onclick = function () {
         closeModal();
