@@ -4,6 +4,7 @@ const inactivityLimit = 15 * 60 * 1000; // 15 minutes in milliseconds
 function logoutUser() {
     console.log('User logged out due to inactivity.');
     navigator.sendBeacon('/logout');
+    window.location.href = '/login'
 }
 
 // Reset the logout timer on user activity
