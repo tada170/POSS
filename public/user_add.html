@@ -1,16 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Add User</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="script.js"></script>
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body class="centered">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add User</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="script.js"></script>
+</head>
+
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="/product-add">Add Product</a></li>
+        <li><a href="/user-add">Add User</a></li>
+        <li><a href="/products-list">Products List</a></li>
+        <li><a href="/">Home</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="centered">
     <div class="container">
-      <h1>Add User to Database</h1>
+      <h2>Add User to Database</h2>
       <form id="addUserForm">
         <div class="form-group">
           <label for="jmeno">Jméno:</label>
@@ -38,59 +52,60 @@
         <button type="submit" class="submit-btn">Add User</button>
       </form>
     </div>
+  </main>
+</body>
 
-    <script>
-      async function loadRole() {
-        try {
-          console.log("Loading roles...");
-          const response = await axios.get("http://localhost:3000/roles");
-          const roles = response.data;
-          console.log("Roles loaded:", roles);
-
-          const roleSelect = document.getElementById("roleID");
-          roles.forEach((role) => {
-            const option = document.createElement("option");
-            option.value = role.RoleID; // Use the RoleID for the option value
-            option.textContent = role.NazevRole; // Use NazevRole for display
-            roleSelect.appendChild(option);
-          });
-        } catch (error) {
-          console.error("Error loading roles:", error);
-        }
-      }
-
-      document.getElementById("addUserForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        const jmeno = document.getElementById("jmeno").value;
-        const prijmeni = document.getElementById("prijmeni").value;
-        const email = document.getElementById("email").value;
-        const heslo = document.getElementById("heslo").value;
-        const roleID = document.getElementById("roleID").value;
-
-        console.log("Form submission:", { jmeno, prijmeni, email, heslo, roleID });
-
-        fetch("/add-user", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ jmeno, prijmeni, email, heslo, roleID }),
-        })
-          .then((response) => {
-            if (response.ok) {
-              alert("User added successfully");
-              document.getElementById("addUserForm").reset();
-            } else {
-              alert("Failed to add user");
-            }
-          })
-          .catch((error) => {
-            console.error("Error adding user:", error);
-          });
-      });
-
-      loadRole();
-    </script>
-  </body>
 </html>
+<script>
+  async function loadRole() {
+    try {
+      console.log("Loading roles...");
+      const response = await axios.get("http://localhost:3000/roles");
+      const roles = response.data;
+      console.log("Roles loaded:", roles);
+
+      const roleSelect = document.getElementById("roleID");
+      roles.forEach((role) => {
+        const option = document.createElement("option");
+        option.value = role.RoleID; // Use the RoleID for the option value
+        option.textContent = role.NazevRole; // Use NazevRole for display
+        roleSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error loading roles:", error);
+    }
+  }
+
+  document.getElementById("addUserForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const jmeno = document.getElementById("jmeno").value;
+    const prijmeni = document.getElementById("prijmeni").value;
+    const email = document.getElementById("email").value;
+    const heslo = document.getElementById("heslo").value;
+    const roleID = document.getElementById("roleID").value;
+
+    console.log("Form submission:", { jmeno, prijmeni, email, heslo, roleID });
+
+    fetch("/add-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ jmeno, prijmeni, email, heslo, roleID }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          alert("User added successfully");
+          document.getElementById("addUserForm").reset();
+        } else {
+          alert("Failed to add user");
+        }
+      })
+      .catch((error) => {
+        console.error("Error adding user:", error);
+      });
+  });
+
+  loadRole();
+</script>

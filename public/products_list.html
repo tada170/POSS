@@ -10,287 +10,307 @@
 </head>
 
 <body>
-    <h1>Product List</h1>
-    <div id="message-container"></div> <!-- Container for messages -->
-    <table id="product-table">
-        <thead>
-            <tr>
-                <th>Product ID</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Allergens</th>
-                <th>Actions</th> <!-- New header for actions -->
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Products will be inserted here dynamically -->
-        </tbody>
-    </table>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/product-add">Add Product</a></li>
+                <li><a href="/user-add">Add User</a></li>
+                <li><a href="/products-list">Products List</a></li>
+                <li><a href="/">Home</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <!-- Modal for editing product -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeModal">&times;</span>
-            <h2>Edit Product</h2>
-            <form id="editForm">
-                <label for="productName">Product Name:</label><br>
-                <input type="text" id="productName" required><br>
-                <label for="productPrice">Price:</label><br>
-                <input type="number" id="productPrice" required><br>
-                <label for="allergen-dropdown">Allergens:</label><br>
-                <select id="allergen-dropdown" class="form-control">
-                    <!-- Options will be populated dynamically -->
-                </select><br>
-                <div id="selected-allergens" class="allergen-list">
-                    <!-- Selected allergens will be shown here -->
-                </div>
-                <input type="hidden" id="productId">
-                <button type="submit">Save Changes</button>
-            </form>
+    <main>
+        <h2>Product List</h2>
+        <div id="message-container"></div>
+
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th>Product ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Allergens</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Products will be inserted here dynamically -->
+            </tbody>
+        </table>
+
+        <!-- Modal for editing product -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <h2>Edit Product</h2>
+                <form id="editForm">
+                    <label for="productName">Product Name:</label><br>
+                    <input type="text" id="productName" required><br>
+                    <label for="productPrice">Price:</label><br>
+                    <input type="number" id="productPrice" required><br>
+                    <label for="allergen-dropdown">Allergens:</label><br>
+                    <select id="allergen-dropdown" class="form-control">
+                        <!-- Options will be populated dynamically -->
+                    </select><br>
+                    <div id="selected-allergens" class="allergen-list">
+                        <!-- Selected allergens will be shown here -->
+                    </div>
+                    <input type="hidden" id="productId">
+                    <button type="submit">Save Changes</button>
+                </form>
+            </div>
         </div>
-    </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        let allergensList = [];
-        let selectedAllergens = []; // Store selected allergens as objects with ID and name
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Fetch products from the backend
-            fetchProducts();
-
-            // Load allergens when the document is ready
-            loadAllergens();
-        });
-
-        async function fetchProducts() {
-            try {
-                const response = await fetch('http://localhost:3000/products-listed');
-                const products = await response.json();
-                const tableBody = document.querySelector('#product-table tbody');
-                tableBody.innerHTML = ''; // Clear the table body before adding new rows
-
-                // Group allergens by product ID
-                const productMap = {};
-                products.forEach(product => {
-                    const { ProduktID, ProduktNazev, Cena, AlergenNazev } = product;
-
-                    // Initialize the product entry if it doesn't exist
-                    if (!productMap[ProduktID]) {
-                        productMap[ProduktID] = {
-                            ProduktID,
-                            ProduktNazev,
-                            Cena,
-                            Allergens: []
-                        };
-                    }
-
-                    // Add allergen name to the product entry if it exists
-                    if (AlergenNazev) {
-                        productMap[ProduktID].Allergens.push(AlergenNazev);
-                    }
-                });
-
-                // Render the product table
-                Object.values(productMap).forEach(product => {
-                    // Create a new row
-                    const row = document.createElement('tr');
-
-                    // Create cells for each field
-                    const idCell = document.createElement('td');
-                    const nameCell = document.createElement('td');
-                    const priceCell = document.createElement('td');
-                    const allergensCell = document.createElement('td');
-                    const actionsCell = document.createElement('td'); // New cell for actions
-
-                    // Fill the cells with product data
-                    idCell.textContent = product.ProduktID; // Product ID
-                    nameCell.textContent = product.ProduktNazev;   // Product Name
-                    priceCell.textContent = product.Cena;    // Product Price
-                    allergensCell.innerHTML = product.Allergens.length > 0 ? product.Allergens.map(allergen => `${allergen} <span class="allergen-icon" title="Edit" onclick="addAllergenToEdit('${allergen}')"></span>`).join(', ') : 'No allergens'; // Change 'None' to 'No allergens'
-
-                    // Create delete button
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
-                    deleteButton.className = 'btn-delete'; // Optional: add a class for styling
-                    deleteButton.onclick = () => deleteProduct(product.ProduktID); // Set the delete function
-
-                    // Create edit button
-                    const editButton = document.createElement('button');
-                    editButton.textContent = 'Edit';
-                    editButton.className = 'btn-edit'; // Optional: add a class for styling
-                    editButton.onclick = () => openEditModal(product); // Open edit modal with product data
-
-                    // Append the buttons to the actions cell
-                    actionsCell.appendChild(deleteButton);
-                    actionsCell.appendChild(editButton);
-
-                    // Append the cells to the row
-                    row.appendChild(idCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(priceCell);
-                    row.appendChild(allergensCell);
-                    row.appendChild(actionsCell); // Append actions cell to the row
-
-                    // Append the row to the table body
-                    tableBody.appendChild(row);
-                });
-            } catch (error) {
-                displayMessage('Error fetching products: ' + error.message, 'error');
-            }
-        }
-
-        async function loadAllergens() {
-            try {
-                const response = await axios.get('http://localhost:3000/allergens');
-                allergensList = response.data;
-                populateAllergenDropdown();
-            } catch (error) {
-                displayMessage('Error loading allergens: ' + error.message, 'error');
-            }
-        }
-
-        function populateAllergenDropdown() {
-            const allergenDropdown = document.getElementById('allergen-dropdown');
-            allergenDropdown.innerHTML = ''; // Clear previous options
-
-            allergensList.forEach(allergen => {
-                const option = document.createElement('option');
-                option.value = allergen.AlergenID; // Store ID as value
-                option.textContent = allergen.Nazev; // Display name
-                allergenDropdown.appendChild(option);
-            });
-
-            allergenDropdown.onchange = function () {
-                const selectedOptions = Array.from(allergenDropdown.selectedOptions);
-                selectedOptions.forEach(option => {
-                    addAllergenToEdit({ id: option.value, name: option.textContent }); // Store as an object with id and name
-                    allergenDropdown.value = ''; // Reset dropdown
-                });
-            };
-        }
-
-        function addAllergenToEdit(allergen) {
-            if (!selectedAllergens.find(a => a.id === allergen.id)) { // Check if allergen is already selected
-                selectedAllergens.push(allergen);
-                renderSelectedAllergens();
-            }
-        }
-
-        function renderSelectedAllergens() {
-            const selectedAllergenContainer = document.getElementById('selected-allergens');
-            selectedAllergenContainer.innerHTML = ''; // Clear existing allergens
-
-            selectedAllergens.forEach(allergen => {
-                if (allergen.name) { // Only render if the allergen has a name
-                    const allergenItem = document.createElement('div');
-                    allergenItem.className = 'allergen-item';
-                    allergenItem.textContent = allergen.name; // Show allergen name
-
-                    const removeButton = document.createElement('span');
-                    removeButton.className = 'remove-allergen';
-                    removeButton.textContent = '×'; // Remove icon
-                    removeButton.onclick = () => removeAllergen(allergen.id); // Pass ID to remove
-
-                    allergenItem.appendChild(removeButton);
-                    selectedAllergenContainer.appendChild(allergenItem);
-                }
-            });
-        }
-
-
-        function removeAllergen(allergenId) {
-            selectedAllergens = selectedAllergens.filter(a => a.id !== allergenId); // Filter by ID
-            renderSelectedAllergens(); // Refresh the list
-        }
-
-        function openEditModal(product) {
-            document.getElementById('productName').value = product.ProduktNazev;
-            document.getElementById('productPrice').value = product.Cena;
-            document.getElementById('productId').value = product.ProduktID;
-
-            // Reset selected allergens
-            selectedAllergens = product.Allergens.map(allergen => ({
-                id: allergen.AlergenID,
-                name: allergen.Nazev || allergen // Ensure we use the correct property for the name
-            })) || [];
-
-            // Render selected allergens
-            renderSelectedAllergens();
-
-            // Show the modal
-            const modal = document.getElementById('editModal');
-            modal.style.display = 'block';
-        }
-
-
-
-        document.getElementById('closeModal').onclick = function () {
-            closeModal();
-        };
-
-        function closeModal() {
-            const modal = document.getElementById('editModal');
-            modal.style.display = 'none'; // Close the modal
-        }
-
-        window.onclick = function (event) {
-            const modal = document.getElementById('editModal');
-            if (event.target == modal) {
-                closeModal(); // Close the modal if clicked outside
-            }
-        };
-
-        document.getElementById('editForm').onsubmit = async function (event) {
-            event.preventDefault(); // Prevent the form from submitting normally
-
-            const productId = document.getElementById('productId').value;
-            const productName = document.getElementById('productName').value;
-            const productPrice = document.getElementById('productPrice').value;
-
-            try {
-                // Extract only the allergen IDs for the update
-                const allergenIds = selectedAllergens.map(allergen => allergen.id);
-
-                // Send updated product details to the backend
-                await axios.put(`http://localhost:3000/products/${productId}`, {
-                    Nazev: productName,
-                    Cena: productPrice,
-                    Alergeny: allergenIds // Send only IDs
-                });
-                displayMessage('Product updated successfully!', 'success');
-                fetchProducts(); // Refresh the product list
-                closeModal(); // Close the modal
-            } catch (error) {
-                displayMessage('Error updating product: ' + error.message, 'error');
-            }
-        }
-
-        async function deleteProduct(productId) {
-            if (confirm('Are you sure you want to delete this product?')) {
-                try {
-                    await axios.delete(`http://localhost:3000/products/${productId}`);
-                    displayMessage('Product deleted successfully!', 'success');
-                    fetchProducts(); // Refresh the product list
-                } catch (error) {
-                    displayMessage('Error deleting product: ' + error.message, 'error');
-                }
-            }
-        }
-
-        function displayMessage(message, type) {
-            const messageContainer = document.getElementById('message-container');
-            const messageDiv = document.createElement('div');
-            messageDiv.textContent = message;
-            messageDiv.className = 'message ' + (type === 'success' ? 'success' : 'error');
-            messageContainer.appendChild(messageDiv);
-
-            // Remove the message after 3 seconds
-            setTimeout(() => {
-                messageContainer.removeChild(messageDiv);
-            }, 3000);
-        }
+        // Your JavaScript code remains the same here.
+        // This includes product fetching, rendering, adding allergens, editing, and deleting functionality.
     </script>
 </body>
 
 </html>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    let allergensList = [];
+    let selectedAllergens = []; // Store selected allergens as objects with ID and name
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fetch products from the backend
+        fetchProducts();
+
+        // Load allergens when the document is ready
+        loadAllergens();
+    });
+
+    async function fetchProducts() {
+        try {
+            const response = await fetch('http://localhost:3000/products-listed');
+            const products = await response.json();
+            const tableBody = document.querySelector('#product-table tbody');
+            tableBody.innerHTML = ''; // Clear the table body before adding new rows
+
+            // Group allergens by product ID
+            const productMap = {};
+            products.forEach(product => {
+                const { ProduktID, ProduktNazev, Cena, AlergenNazev } = product;
+
+                // Initialize the product entry if it doesn't exist
+                if (!productMap[ProduktID]) {
+                    productMap[ProduktID] = {
+                        ProduktID,
+                        ProduktNazev,
+                        Cena,
+                        Allergens: []
+                    };
+                }
+
+                // Add allergen name to the product entry if it exists
+                if (AlergenNazev) {
+                    productMap[ProduktID].Allergens.push(AlergenNazev);
+                }
+            });
+
+            // Render the product table
+            Object.values(productMap).forEach(product => {
+                // Create a new row
+                const row = document.createElement('tr');
+
+                // Create cells for each field
+                const idCell = document.createElement('td');
+                const nameCell = document.createElement('td');
+                const priceCell = document.createElement('td');
+                const allergensCell = document.createElement('td');
+                const actionsCell = document.createElement('td'); // New cell for actions
+
+                // Fill the cells with product data
+                idCell.textContent = product.ProduktID; // Product ID
+                nameCell.textContent = product.ProduktNazev;   // Product Name
+                priceCell.textContent = product.Cena;    // Product Price
+                allergensCell.innerHTML = product.Allergens.length > 0 ? product.Allergens.map(allergen => `${allergen} <span class="allergen-icon" title="Edit" onclick="addAllergenToEdit('${allergen}')"></span>`).join(', ') : 'No allergens'; // Change 'None' to 'No allergens'
+
+                // Create delete button
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'btn-delete'; // Optional: add a class for styling
+                deleteButton.onclick = () => deleteProduct(product.ProduktID); // Set the delete function
+
+                // Create edit button
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.className = 'btn-edit'; // Optional: add a class for styling
+                editButton.onclick = () => openEditModal(product); // Open edit modal with product data
+
+                // Append the buttons to the actions cell
+                actionsCell.appendChild(deleteButton);
+                actionsCell.appendChild(editButton);
+
+                // Append the cells to the row
+                row.appendChild(idCell);
+                row.appendChild(nameCell);
+                row.appendChild(priceCell);
+                row.appendChild(allergensCell);
+                row.appendChild(actionsCell); // Append actions cell to the row
+
+                // Append the row to the table body
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            displayMessage('Error fetching products: ' + error.message, 'error');
+        }
+    }
+
+    async function loadAllergens() {
+        try {
+            const response = await axios.get('http://localhost:3000/allergens');
+            allergensList = response.data;
+            populateAllergenDropdown();
+        } catch (error) {
+            displayMessage('Error loading allergens: ' + error.message, 'error');
+        }
+    }
+
+    function populateAllergenDropdown() {
+        const allergenDropdown = document.getElementById('allergen-dropdown');
+        allergenDropdown.innerHTML = ''; // Clear previous options
+
+        allergensList.forEach(allergen => {
+            const option = document.createElement('option');
+            option.value = allergen.AlergenID; // Store ID as value
+            option.textContent = allergen.Nazev; // Display name
+            allergenDropdown.appendChild(option);
+        });
+
+        allergenDropdown.onchange = function () {
+            const selectedOptions = Array.from(allergenDropdown.selectedOptions);
+            selectedOptions.forEach(option => {
+                addAllergenToEdit({ id: option.value, name: option.textContent }); // Store as an object with id and name
+                allergenDropdown.value = ''; // Reset dropdown
+            });
+        };
+    }
+
+    function addAllergenToEdit(allergen) {
+        if (!selectedAllergens.find(a => a.id === allergen.id)) { // Check if allergen is already selected
+            selectedAllergens.push(allergen);
+            renderSelectedAllergens();
+        }
+    }
+
+    function renderSelectedAllergens() {
+        const selectedAllergenContainer = document.getElementById('selected-allergens');
+        selectedAllergenContainer.innerHTML = ''; // Clear existing allergens
+
+        selectedAllergens.forEach(allergen => {
+            if (allergen.name) { // Only render if the allergen has a name
+                const allergenItem = document.createElement('div');
+                allergenItem.className = 'allergen-item';
+                allergenItem.textContent = allergen.name; // Show allergen name
+
+                const removeButton = document.createElement('span');
+                removeButton.className = 'remove-allergen';
+                removeButton.textContent = '×'; // Remove icon
+                removeButton.onclick = () => removeAllergen(allergen.id); // Pass ID to remove
+
+                allergenItem.appendChild(removeButton);
+                selectedAllergenContainer.appendChild(allergenItem);
+            }
+        });
+    }
+
+
+    function removeAllergen(allergenId) {
+        selectedAllergens = selectedAllergens.filter(a => a.id !== allergenId); // Filter by ID
+        renderSelectedAllergens(); // Refresh the list
+    }
+
+    function openEditModal(product) {
+        document.getElementById('productName').value = product.ProduktNazev;
+        document.getElementById('productPrice').value = product.Cena;
+        document.getElementById('productId').value = product.ProduktID;
+
+        // Reset selected allergens
+        selectedAllergens = product.Allergens.map(allergen => ({
+            id: allergen.AlergenID,
+            name: allergen.Nazev || allergen // Ensure we use the correct property for the name
+        })) || [];
+
+        // Render selected allergens
+        renderSelectedAllergens();
+
+        // Show the modal
+        const modal = document.getElementById('editModal');
+        modal.style.display = 'block';
+    }
+
+
+
+    document.getElementById('closeModal').onclick = function () {
+        closeModal();
+    };
+
+    function closeModal() {
+        const modal = document.getElementById('editModal');
+        modal.style.display = 'none'; // Close the modal
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById('editModal');
+        if (event.target == modal) {
+            closeModal(); // Close the modal if clicked outside
+        }
+    };
+
+    document.getElementById('editForm').onsubmit = async function (event) {
+        event.preventDefault(); // Prevent the form from submitting normally
+
+        const productId = document.getElementById('productId').value;
+        const productName = document.getElementById('productName').value;
+        const productPrice = document.getElementById('productPrice').value;
+
+        try {
+            // Extract only the allergen IDs for the update
+            const allergenIds = selectedAllergens.map(allergen => allergen.id);
+
+            // Send updated product details to the backend
+            await axios.put(`http://localhost:3000/products/${productId}`, {
+                Nazev: productName,
+                Cena: productPrice,
+                Alergeny: allergenIds // Send only IDs
+            });
+            displayMessage('Product updated successfully!', 'success');
+            fetchProducts(); // Refresh the product list
+            closeModal(); // Close the modal
+        } catch (error) {
+            displayMessage('Error updating product: ' + error.message, 'error');
+        }
+    }
+
+    async function deleteProduct(productId) {
+        if (confirm('Are you sure you want to delete this product?')) {
+            try {
+                await axios.delete(`http://localhost:3000/products/${productId}`);
+                displayMessage('Product deleted successfully!', 'success');
+                fetchProducts(); // Refresh the product list
+            } catch (error) {
+                displayMessage('Error deleting product: ' + error.message, 'error');
+            }
+        }
+    }
+
+    function displayMessage(message, type) {
+        const messageContainer = document.getElementById('message-container');
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = message;
+        messageDiv.className = 'message ' + (type === 'success' ? 'success' : 'error');
+        messageContainer.appendChild(messageDiv);
+
+        // Remove the message after 3 seconds
+        setTimeout(() => {
+            messageContainer.removeChild(messageDiv);
+        }, 3000);
+    }
+</script>
