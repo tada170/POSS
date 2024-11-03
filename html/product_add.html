@@ -7,7 +7,6 @@
     <title>Add Product with Allergens</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/styles/styles.css">
-    <script src="/script/logout.js"></script>
 </head>
 
 <body>
@@ -16,7 +15,7 @@
         <li><a href="/user-add">Add User</a></li>
         <li><a href="/products-list">Products List</a></li>
         <li><a href="/">Home</a></li>
-        <li><button class="logout-btn"  onclick="logoutUser()">Logout</button></li>
+        <li><button class="logout-btn" onclick="logoutUser()">Logout</button></li>
     </ul>
 
     <div class="container mt-5">
@@ -49,117 +48,8 @@
         <div id="message" class="mt-3"></div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</body>
-
-</html>
-
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-<script>
-    let allergensList = [];
-
-    // Fetch categories from the server and display them in a dropdown
-    async function loadCategories() {
-        try {
-            const response = await axios.get('http://localhost:3000/categories');
-            const categories = response.data; // Assuming this is the response you shared
-            const categorySelect = document.getElementById('categoryID');
-
-            categories.forEach(category => {
-                // Set value as the KategorieID, display the Nazev
-                const optionHTML = `<option value="${category.KategorieID}">${category.Nazev}</option>`;
-                categorySelect.innerHTML += optionHTML;
-            });
-        } catch (error) {
-            console.error('Error loading categories:', error);
-        }
-    }
-
-    async function loadAllergens() {
-        try {
-            const response = await axios.get('http://localhost:3000/allergens');
-            allergensList = response.data;
-            populateAllergenDropdown();
-        } catch (error) {
-            console.error('Error loading allergens:', error);
-        }
-    }
-
-    function populateAllergenDropdown() {
-        const allergensDropdown = document.getElementById('allergen-dropdown');
-        allergensDropdown.innerHTML = '<option value="">--Choose an allergen--</option>'; // Reset dropdown options
-
-        allergensList.forEach(allergen => {
-            const optionHTML = `<option value="${allergen.AlergenID}">${allergen.Nazev}</option>`;
-            allergensDropdown.innerHTML += optionHTML;
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        loadCategories();
-        loadAllergens();
-    });
-
-    function addAllergen() {
-        const dropdown = document.getElementById("allergen-dropdown");
-        const selectedAllergenID = dropdown.value;
-        const selectedAllergensDiv = document.getElementById("selected-allergens");
-
-        if (selectedAllergenID) {
-            const selectedAllergen = allergensList.find(allergen => allergen.AlergenID == selectedAllergenID);
-            const allergenDiv = document.createElement("div");
-            allergenDiv.className = "selected-allergen";
-            allergenDiv.textContent = selectedAllergen.Nazev;
-
-            const cross = document.createElement("span");
-            cross.className = "cross";
-            cross.textContent = "X";
-            cross.onclick = function () {
-                selectedAllergensDiv.removeChild(allergenDiv);
-                dropdown.options[dropdown.options.length] = new Option(selectedAllergen.Nazev, selectedAllergen.AlergenID);
-            };
-
-            allergenDiv.appendChild(cross);
-            selectedAllergensDiv.appendChild(allergenDiv);
-
-            // Remove the selected allergen from the dropdown
-            const optionToRemove = [...dropdown.options].find(option => option.value === selectedAllergenID);
-            dropdown.remove(optionToRemove.index);
-
-            // Reset the dropdown
-            dropdown.value = "";
-        }
-    }
-
-    // Handle form submission
-    document.getElementById('productForm').addEventListener('submit', async function (event) {
-        event.preventDefault();
-
-        const productName = document.getElementById('productName').value;
-        const productPrice = document.getElementById('productPrice').value;
-        const categoryID = document.getElementById('categoryID').value;
-        const allergens = Array.from(document.querySelectorAll('#selected-allergens .selected-allergen')).map(allergen => {
-            const allergenName = allergen.textContent.slice(0, -1);
-            const allergenObject = allergensList.find(a => a.Nazev === allergenName);
-            return allergenObject ? allergenObject.AlergenID : null;
-        }).filter(id => id !== null);
-
-        try {
-            const response = await axios.post('http://localhost:3000/products', {
-                Nazev: productName,
-                Cena: parseFloat(productPrice),
-                KategID: parseInt(categoryID),
-                Alergeny: allergens
-            });
-            console.log(response);
-            document.getElementById('message').innerHTML = `<div class="alert alert-success">Product added successfully!</div>`;
-        } catch (error) {
-            console.error(error);
-            document.getElementById('message').innerHTML = `<div class="alert alert-danger">Error adding product!</div>`;
-        }
-    });
-
-</script>
+    <script src="/script/logout.js"></script>
+    <script src="/script/product_add.js"></script>
 </body>
 
 </html>

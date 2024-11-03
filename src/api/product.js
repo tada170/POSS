@@ -5,7 +5,6 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
 
         const { Nazev, Cena, KategID, Alergeny } = req.body;
 
-        // Check for missing fields and log accordingly
         if (!Nazev || !Cena || !KategID) {
             return res.status(400).send("Missing product details");
         }
@@ -38,12 +37,9 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
 
             const insertAllergens = new sql.Request(transaction);
             for (const alergen of Alergeny) {
-                // Create a new request for each allergen
                 const insertAllergen = new sql.Request(transaction);
-                const alergenID = parseInt(alergen, 10); // Ensure the allergen ID is an integer
-
                 insertAllergen.input("ProduktID", sql.Int, ProduktID);
-                insertAllergen.input("AlergenID", sql.Int, alergenID);
+                insertAllergen.input("AlergenID", sql.Int, alergen);
 
                 console.log(
                     `Inserting allergen with ID ${alergenID} for product ID ${ProduktID}`
@@ -102,38 +98,32 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
         }
     });
     aplication.delete("/products/:id", async (req, res) => {
-        const productId = req.params.id; // Get the product ID from the request parameters
-
-        let transaction; // Declare the transaction variable outside to use it in catch block
+        const productId = req.params.id;
+        let transaction;
 
         try {
-            // Begin a transaction
             const pool = await dbPoolPromise;
             transaction = new sql.Transaction(pool);
             await transaction.begin();
             console.log(`Started transaction for product ID ${productId}`);
 
-            // Delete any records in PolozkaTransakce that reference the product
             await transaction
                 .request()
                 .input("ProduktID", sql.Int, productId)
-                .query("DELETE FROM PolozkaTransakce WHERE ProduktID = @ProduktID"); // Clear existing references
+                .query("DELETE FROM PolozkaTransakce WHERE ProduktID = @ProduktID");
             console.log(`Cleared references in PolozkaTransakce for product ID ${productId}`);
 
-            // Delete any allergens associated with the product
             await transaction
                 .request()
                 .input("ProduktID", sql.Int, productId)
-                .query("DELETE FROM ProduktAlergen WHERE ProduktID = @ProduktID"); // Clear existing allergens
+                .query("DELETE FROM ProduktAlergen WHERE ProduktID = @ProduktID");
             console.log(`Cleared allergens for product ID ${productId}`);
 
-            // Now delete the product itself
             const deleteProduct = await transaction
                 .request()
                 .input("ProduktID", sql.Int, productId)
-                .query("DELETE FROM Produkt WHERE ProduktID = @ProduktID"); // SQL query to delete the product
+                .query("DELETE FROM Produkt WHERE ProduktID = @ProduktID");
 
-            // Check if any rows were affected
             if (deleteProduct.rowsAffected[0] === 0) {
                 console.log(`No product found with ID ${productId}`);
                 return res.status(404).send("Product not found");
@@ -141,22 +131,17 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
 
             await transaction.commit();
             console.log(`Transaction committed successfully for product ID ${productId}`);
-            res.sendStatus(204); // HTTP status code 204 means No Content
+            res.sendStatus(204);
         } catch (error) {
             console.error("Error deleting product:", error);
-            if (transaction) await transaction.rollback(); // Ensure rollback if transaction is defined
+            if (transaction) await transaction.rollback();
             res.status(500).send("Error deleting product");
         }
     });
+
     aplication.put("/products/:id", async (req, res) => {
         const productId = req.params.id;
         const { Nazev, Cena, Alergeny } = req.body;
-
-        // Log the incoming request data
-        console.log(
-            `Received request to update product ID ${productId}:`,
-            req.body
-        );
 
         try {
             const pool = await dbPoolPromise;
@@ -164,7 +149,6 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
             await transaction.begin();
             console.log(`Started transaction for product ID ${productId}`);
 
-            // Update the product details
             const updateRequest = transaction
                 .request()
                 .input("ProduktID", sql.Int, productId)
@@ -179,22 +163,18 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
             WHERE ProduktID = @ProduktID;
         `);
 
-            // Check if any rows were affected
             if (updateResult.rowsAffected[0] === 0) {
                 console.log(`No rows updated for product ID ${productId}`);
                 return res.status(404).send("Product not found");
             }
 
-            // Clear existing allergens
             await transaction
                 .request()
                 .input("ProduktID", sql.Int, productId)
                 .query("DELETE FROM ProduktAlergen WHERE ProduktID = @ProduktID;");
             console.log(`Cleared allergens for product ID ${productId}`);
 
-            // Insert new allergens
             for (const alergen of Alergeny) {
-                //const alergenID = parseInt(alergen, 10);
                 console.log(
                     `Inserting allergen with ID ${alergen} for product ID ${productId}`
                 );
@@ -202,16 +182,13 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
                 await transaction
                     .request()
                     .input("ProduktID", sql.Int, productId)
-                    .input("AlergenID", sql.Int, alergenID).query(`
+                    .input("AlergenID", sql.Int, alergen).query(`
                     INSERT INTO ProduktAlergen (ProduktID, AlergenID)
                     VALUES (@ProduktID, @AlergenID);
                 `);
             }
-
             await transaction.commit();
-            console.log(
-                `Transaction committed successfully for product ID ${productId}`
-            );
+            console.log(`Transaction committed successfully for product ID ${productId}`);
             res.status(200).send("Product updated successfully");
         } catch (err) {
             console.error("Error updating product:", err);

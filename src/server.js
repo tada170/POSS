@@ -47,6 +47,7 @@ function configureApp(aplication) {
       secure: false,
     }
   }));
+  
   aplication.use(express.static(path.join(projectPath, "public")));
   aplication.use(cors());
   aplication.use(bodyParser.json());

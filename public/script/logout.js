@@ -7,16 +7,13 @@ function logoutUser() {
     window.location.href = '/login'
 }
 
-// Reset the logout timer on user activity
 function resetLogoutTimer() {
     clearTimeout(logoutTimeout);
     logoutTimeout = setTimeout(logoutUser, inactivityLimit);
 }
 
-// Initialize the logout timer on page load
 resetLogoutTimer();
 
-// Listen for user activity events
-['mousemove', 'keydown', 'scroll', 'click', 'touchstart'].forEach(event => {
+['mousemove', 'keydown', 'scroll', 'click'].forEach(event => {
     window.addEventListener(event, resetLogoutTimer);
 });

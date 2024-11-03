@@ -21,40 +21,10 @@
                 <input type="password" id="password" name="password" required>
             </div>
             <input type="submit" value="Login">
-            <p id="error-message"></p> <!-- Error message paragraph -->
+            <p id="error-message"></p>
         </form>
     </div>
-    <script>
-        document.getElementById('login-form').addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent form from submitting the traditional way
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            // Clear previous error message
-            document.getElementById('error-message').innerText = '';
-
-            // Send the data as JSON to the backend
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
-            });
-
-            // Check response status and handle accordingly
-            if (response.ok) {
-                // If login is successful, redirect
-                window.location.href = '/'; 
-            } else {
-                // Handle error responses
-                const errorMessage = await response.text();
-                console.error('Login failed:', errorMessage);
-                document.getElementById('error-message').innerText = errorMessage; // Display error message on UI
-            }
-        });
-    </script>
-
+    <link rel="stylesheet" href="/styles/styles.css">
+    <script src="/script/login.js"></script>
 </body>
 </html>
