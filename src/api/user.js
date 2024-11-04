@@ -76,5 +76,15 @@ function configureUserHandeling(aplication, dbPoolPromise) {
             res.status(500).send("Error adding user to the database");
         }
     });
+    aplication.get("/users", async (req, res) => {
+        try {
+            const pool = await dbPoolPromise;
+            const result = await pool.request().query("SELECT * FROM Uzivatel");
+            res.json(result.recordset);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send("Error retrieving users");
+        }
+    });
 }
 module.exports = { configureUserHandeling }
