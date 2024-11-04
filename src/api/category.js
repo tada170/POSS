@@ -34,5 +34,29 @@ function defineAPICategoryEndpoints(aplication, dbPoolPromise) {
             res.status(500).json({ error: "Error adding category" });
         }
     });
+    aplication.delete("/categories/:id", async (req, res) => {
+        const categoryId = req.params.id;
+        console.log(`Attempting to delete category with ID: ${categoryId}`);
+    
+        try {
+            const pool = await dbPoolPromise;
+            const request = new sql.Request(pool);
+            request.input("CategoryId", sql.Int, categoryId);
+    
+            const result = await request.query("DELETE FROM Kategorie WHERE KategorieID = @CategoryId");
+    
+            console.log(`Rows affected by delete: ${result.rowsAffected[0]}`);
+            if (result.rowsAffected[0] === 0) {
+                console.log(`No category found with ID: ${categoryId}`);
+                return res.status(404).json({ error: "Category not found" });
+            }
+    
+            res.status(200).json({ message: "Category deleted successfully" });
+        } catch (err) {
+            console.error("Error deleting category:", err);
+            res.status(500).send("Error deleting category");
+        }
+    });
+    
 }
 module.exports = { defineAPICategoryEndpoints }

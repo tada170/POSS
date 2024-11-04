@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="/styles/styles.css">
+    <title>Category List</title>
+    <link rel="stylesheet" href="styles/styles.css">
 </head>
 <body>
     <ul>
@@ -44,7 +44,22 @@
     
         <li><button class="logout-btn" onclick="logoutUser()">Logout</button></li>
     </ul>
-    <h1>Welcome</h1>
-    <script src="/script/logout.js"></script>
+    <div class="container">
+        <h1>Category List</h1>
+        <div id="message-container"></div> 
+        <table id="category-table">
+            <thead>
+                <tr>
+                    <th>Category Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    
+    <script src="/script/category_list.js"></script>
 </body>
 </html>

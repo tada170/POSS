@@ -10,60 +10,62 @@
 
 <body>
 
-            <ul>
-                <li class="dropdown">
-                    <a href="#" class="dropbtn">Product</a>
-                    <div class="dropdown-content">
-                        <a href="/product-add">Add Product</a>
-                        <a href="/products-list">Product List</a>
-                    </div>
-                </li>
-            
-                <li class="dropdown">
-                    <a href="#" class="dropbtn">Category</a>
-                    <div class="dropdown-content">
-                        <a href="/category-add">Add Category</a>
-                        <a href="/categories-list">Category List</a>
-                    </div>
-                </li>
-            
-                <li class="dropdown">
-                    <a href="#" class="dropbtn">Role</a>
-                    <div class="dropdown-content">
-                        <a href="/role-add">Add Role</a>
-                        <a href="/roles-list">Role List</a>
-                    </div>
-                </li>
-            
-                <li class="dropdown">
-                    <a href="#" class="dropbtn">Users</a>
-                    <div class="dropdown-content">
-                        <a href="/user-add">Add User</a>
-                        <a href="/users-list">User List</a>
-                    </div>
-                </li>
-            
-                <li><a href="/">Home</a></li>
-            
-                <li><button class="logout-btn" onclick="logoutUser()">Logout</button></li>
-            </ul>
+    <ul>
+        <li class="dropdown">
+            <a href="#" class="dropbtn">Product</a>
+            <div class="dropdown-content">
+                <a href="/product-add">Add Product</a>
+                <a href="/products-list">Product List</a>
+            </div>
+        </li>
+
+        <li class="dropdown">
+            <a href="#" class="dropbtn">Category</a>
+            <div class="dropdown-content">
+                <a href="/category-add">Add Category</a>
+                <a href="/category-list">Category List</a>
+            </div>
+        </li>
+
+        <li class="dropdown">
+            <a href="#" class="dropbtn">Role</a>
+            <div class="dropdown-content">
+                <a href="/role-add">Add Role</a>
+                <a href="/roles-list">Role List</a>
+            </div>
+        </li>
+
+        <li class="dropdown">
+            <a href="#" class="dropbtn">Users</a>
+            <div class="dropdown-content">
+                <a href="/user-add">Add User</a>
+                <a href="/users-list">User List</a>
+            </div>
+        </li>
+
+        <li><a href="/">Home</a></li>
+
+        <li><button class="logout-btn" onclick="logoutUser()">Logout</button></li>
+    </ul>
 
 
     <main>
-        <h2>Product List</h2>
-        <div id="message-container"></div>
-        <table id="product-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Allergens</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <div class="container">
+            <h2>Product List</h2>
+            <div id="message-container"></div>
+            <table id="product-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Allergens</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
         <div id="editModal" class="modal">
             <div class="modal-content">
                 <span class="close" id="closeModal">&times;</span>
@@ -88,4 +90,5 @@
     <script src="/script/product_list.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
+
 </html>
