@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Add New Category</title>
     <link rel="stylesheet" href="/styles/styles.css">
 </head>
+
 <body>
     <ul>
         <li class="dropdown">
@@ -44,7 +46,27 @@
     
         <li><button class="logout-btn" onclick="logoutUser()">Logout</button></li>
     </ul>
-    <h1>Welcome</h1>
-    <script src="/script/logout.js"></script>
+    
+
+    <div class="container">
+        <h1>Add a New Category</h1>
+        <form id="addCategoryForm">
+            <div class="form-group">
+                <label for="categoryName">Category Name:</label>
+                <input type="text" id="categoryName" name="categoryName" required>
+            </div>
+            <input type="submit" value="Add Category">
+            <div id="error-message"></div>
+        </form>
+
+        <div id="success-message" class="alert alert-success" style="display: none;">
+            Category added successfully!
+        </div>
+        <div id="error-message" class="alert alert-danger" style="display: none;">
+            Failed to add category. Please try again.
+        </div>
+    </div>
+    <script src="script/category_add"></script>
 </body>
+
 </html>
