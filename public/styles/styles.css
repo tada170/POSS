@@ -237,6 +237,9 @@ ul li {
 .dropdown {
     position: relative;
 }
+.btn-edit{
+    margin-top: 5px;
+}
 
 .dropbtn {
     color: white;

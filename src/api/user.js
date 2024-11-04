@@ -86,5 +86,25 @@ function configureUserHandeling(aplication, dbPoolPromise) {
             res.status(500).send("Error retrieving users");
         }
     });
+    aplication.delete('/users/:id', async (req, res) => {
+        const userId = req.params.id;
+
+        try {
+            const pool = await dbPoolPromise;
+            const request = new sql.Request(pool);
+            request.input("UserId", sql.Int, userId);
+
+            const result = await request.query(`DELETE FROM Uzivatel WHERE UzivatelID = @UserId`);
+
+            if (result.rowsAffected[0] === 0) {
+                return res.status(404).json({ error: "User not found" });
+            }
+
+            res.status(200).json({ message: "User deleted successfully" });
+        } catch (err) {
+            console.error("Error deleting user:", err);
+            res.status(500).json({ error: "Error deleting user" });
+        }
+    });
 }
 module.exports = { configureUserHandeling }
