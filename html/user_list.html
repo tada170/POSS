@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User List</title>
     <link rel="stylesheet" href="styles/styles.css">
-
 </head>
 
 <body>
@@ -18,7 +17,6 @@
                 <a href="/products-list">Product List</a>
             </div>
         </li>
-
         <li class="dropdown">
             <a href="#" class="dropbtn">Category</a>
             <div class="dropdown-content">
@@ -26,7 +24,6 @@
                 <a href="/category-list">Category List</a>
             </div>
         </li>
-
         <li class="dropdown">
             <a href="#" class="dropbtn">Users</a>
             <div class="dropdown-content">
@@ -53,9 +50,32 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Modal for editing user -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Edit User</h2>
+            <form id="edit-form">
+                <div class="form-group">
+                    <label for="edit-first-name">First Name:</label>
+                    <input type="text" id="edit-first-name" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-last-name">Last Name:</label>
+                    <input type="text" id="edit-last-name" name="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email:</label>
+                    <input type="email" id="edit-email" name="email" required>
+                </div>
+                <button type="button" onclick="saveUserChanges()">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="script/user_list.js"></script>
-
 </body>
 
 </html>
