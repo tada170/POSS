@@ -47,11 +47,25 @@
                 </tr>
             </thead>
             <tbody>
-
+                <!-- Category rows will be populated here -->
             </tbody>
         </table>
     </div>
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Edit Category Name</h2>
+            <form id="edit-form">
+                <div class="form-group">
+                    <label for="edit-category-name">Category Name:</label>
+                    <input type="text" id="edit-category-name" name="categoryName" required>
+                </div>
+                <button type="button" onclick="saveCategoryChanges()">Save Changes</button>
+            </form>
+        </div>
+    </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/script/category_list.js"></script>
 </body>
 </html>

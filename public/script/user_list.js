@@ -105,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 3000);
   }
   
-  // Close modal if clicked outside of modal content
   window.onclick = function(event) {
     if (event.target === document.getElementById("edit-modal")) {
       closeModal();
