@@ -274,3 +274,14 @@ ul li {
 .dropdown:hover .dropdown-content {
     display: block; /* Show the dropdown on hover */
 }
+/* Footer Styling */
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-weight: bold;
+}

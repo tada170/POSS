@@ -34,6 +34,8 @@ function defineHTMLEndpoints(aplication,isAuthenticated){
     aplication.get("/user-list",isAuthenticated, (req, res) => {
       res.sendFile(path.join(projectPath, "html", "user_list.html"));
     });
-
+    aplication.get("/order-add",isAuthenticated, (req, res) => {
+        res.sendFile(path.join(projectPath, "html", "order_add.html"));
+    });
 }
 module.exports = {defineHTMLEndpoints}

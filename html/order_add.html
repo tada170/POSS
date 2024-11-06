@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Order</title>
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+<ul>
+    <li class="dropdown">
+        <a href="#" class="dropbtn">Product</a>
+        <div class="dropdown-content">
+            <a href="/product-add">Add Product</a>
+            <a href="/products-list">Product List</a>
+        </div>
+    </li>
+
+    <li class="dropdown">
+        <a href="#" class="dropbtn">Category</a>
+        <div class="dropdown-content">
+            <a href="/category-add">Add Category</a>
+            <a href="/category-list">Category List</a>
+        </div>
+    </li>
+
+    <li class="dropdown">
+        <a href="#" class="dropbtn">Users</a>
+        <div class="dropdown-content">
+            <a href="/user-add">Add User</a>
+            <a href="/user-list">User List</a>
+        </div>
+    </li>
+
+    <li><a href="/">Home</a></li>
+
+    <li><button class="logout-btn" onclick="logoutUser()">Logout</button></li>
+</ul>
+
+<div class="container">
+    <h1>Order List</h1>
+    <div id="message-container"></div>
+    <button id="add-order-btn" onclick="openModal()">Add Order</button>
+
+</div>
+
+<div id="order-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Add New Order</h2>
+        <form id="order-form">
+            <div class="form-group">
+                <label for="order-name">Order Name:</label>
+                <input type="text" id="order-name" name="Nazev" required>
+            </div>
+            <button type="button" onclick="saveOrder()">Save Order</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/script/order_add.js"></script>
+</body>
+</html>

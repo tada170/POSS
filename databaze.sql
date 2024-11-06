@@ -55,6 +55,7 @@ GO
 
 -- Tabulka pro transakce
 CREATE TABLE Transakce (
+    Nazev varchar(50) NOT NULL,
     TransakceID INT IDENTITY(1,1) PRIMARY KEY,
     UzivatelID INT,
     DatumTransakce DATETIME DEFAULT GETDATE(),
