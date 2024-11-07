@@ -204,6 +204,14 @@ th {
     flex-wrap: wrap;
     gap: 15px;
 }
+.order-item{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+}
 
 .allergen-item,
 .selected-allergen {
@@ -216,13 +224,15 @@ th {
 }
 
 .remove-allergen,
-.cross {
+.cross{
     margin-left: 5px;
     color: #f44336;
     cursor: pointer;
     font-weight: bold;
 }
-
+.drop-down-btn{
+    margin-left: auto;
+}
 #error-message {
     color: red;
     text-align: center;

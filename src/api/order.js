@@ -6,7 +6,7 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
     aplication.get("/order", async (req, res) => {
         try {
             const pool = await dbPoolPromise;
-            const result = await pool.request().query("SELECT * FROM Transakce");
+            const result = await pool.request().query("SELECT Nazev FROM Transakce");
             res.json(result.recordset);
         } catch (err) {
             console.error("Error retrieving categories:", err);
