@@ -233,10 +233,16 @@ th {
 .drop-down-btn{
     margin-left: auto;
 }
-#error-message {
+.error-message{
     color: red;
     text-align: center;
     margin-top: 10px;
+    display: none;
+}
+.success-message{
+    text-align: center;
+    margin-top: 10px;
+    display: none;
 }
 /* Navigation Styling */
 ul li {

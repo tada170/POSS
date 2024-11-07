@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const addCategoryForm = document.getElementById('addCategoryForm');
-    const successMessage = document.getElementById('success-message');
-    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.querySelector('.success-message');
+    const errorMessage = document.querySelector('.error-message');
 
     addCategoryForm.addEventListener('submit', function (e) {
         e.preventDefault();
