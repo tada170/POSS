@@ -35,6 +35,30 @@ h1 {
 h2 {
     text-align: center;
 }
+.category-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.category-item {
+    width: calc(33.33% - 10px);
+    aspect-ratio: 1;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.category-container > .category-item:nth-last-child(2):nth-child(odd),
+.category-container > .category-item:nth-last-child(1):nth-child(odd) {
+    width: calc(33% - 10px);
+    margin-right: 0;
+}
 
 /* Form and Input Styling */
 .form-group {
@@ -204,7 +228,7 @@ th {
     flex-wrap: wrap;
     gap: 15px;
 }
-.order-item{
+.order-item {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -213,6 +237,18 @@ th {
     margin-top: 5px;
 }
 
+.title-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.drop-down-btn {
+    cursor: pointer;
+}
+.item-list{
+    width: 80%;
+}
 .allergen-item,
 .selected-allergen {
     margin: 5px;
@@ -229,9 +265,6 @@ th {
     color: #f44336;
     cursor: pointer;
     font-weight: bold;
-}
-.drop-down-btn{
-    margin-left: auto;
 }
 .error-message{
     color: red;

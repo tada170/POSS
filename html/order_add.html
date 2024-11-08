@@ -48,7 +48,7 @@
     <h1>Order List</h1>
     <div id="order-list-container"></div>
     <div id="message-container"></div>
-    <button id="add-order-btn" onclick="openModal()">Add Order</button>
+    <button id="add-order-btn" class="btn-edit" onclick="openModal()">Add Order</button>
 
 </div>
 
@@ -70,10 +70,8 @@
         <span class="close" onclick="closeItemModal()">&times;</span>
         <h2>Add New Order</h2>
         <form id="order-add-form">
-            <div class="form-group">
-                <label for="order-item-name">Order Name:</label>
-                <input type="text" id="order-item-name" name="Nazev" required>
-            </div>
+            <div id="category-list-container" class="form-group category-container"></div>
+            <div id="product-list-container" class="form-group product-container"></div>
             <button type="button" onclick="saveOrderItem()">Save Order Add</button>
         </form>
     </div>

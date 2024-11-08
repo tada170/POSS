@@ -71,6 +71,27 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
             res.status(500).send("Error retrieving products");
         }
     });
+    aplication.get("/products/:categoryId", async (req, res) => {
+        try {
+            const categoryId = req.params.categoryId;  // Get the categoryId from the URL
+            const pool = await dbPoolPromise;
+
+            const result = await pool.request()
+                .input("categoryId", sql.Int, categoryId)
+                .query("SELECT * FROM Produkt WHERE KategorieID = @categoryId");
+
+            if (result.recordset.length === 0) {
+                return res.status(404).send("No products found for this category");
+            }
+
+            res.json(result.recordset);
+        } catch (err) {
+            console.error("Error retrieving products by category:", err);
+            res.status(500).send("Error retrieving products");
+        }
+    });
+
+
 
     aplication.get("/products-listed", async (req, res) => {
         try {
