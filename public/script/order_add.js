@@ -22,24 +22,125 @@ window.onclick = function (event) {
         closeModal();
     }
 };
+
+function openModal() {
+    console.log("Opening order modal...");
+    document.getElementById('order-modal').style.display = 'block';
+}
+
+function closeModal() {
+    console.log("Closing order modal...");
+    document.getElementById("order-modal").style.display = "none";
+}
+
+function saveOrder() {
+    const orderName = document.getElementById("order-name").value;
+    console.log(`Saving order with name: ${orderName}`);
+
+    fetch('/order-add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: orderName})
+    })
+        .then(response => {
+            console.log("Order saved:", response);
+            alert(`Order '${orderName}' saved!`);
+            closeModal();
+        })
+        .catch(error => console.error("Error saving order:", error));
+}
+
+window.onclick = function (event) {
+    if (event.target === document.getElementById("order-modal")) {
+        console.log("Clicked outside modal, closing it...");
+        closeModal();
+    }
+};
+
 function getOrders() {
+    console.log("Fetching orders...");
+
     fetch('/order')
-       .then(response => response.json())
-       .then(orders => {
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data received from server:", data);
+
+            // Group the data by TransakceID (order ID)
+            const orders = data.reduce((acc, item) => {
+                const transakceID = item.TransakceID;
+                if (!acc[transakceID]) {
+                    acc[transakceID] = {
+                        TransakceID: transakceID,
+                        Nazev: item.TransakceNazev,
+                        UzivatelJmeno: item.UzivatelJmeno,
+                        DatumTransakce: item.DatumTransakce,
+                        items: []
+                    };
+                }
+
+                acc[transakceID].items.push({
+                    ProduktID: item.ProduktID,
+                    ProduktNazev: item.ProduktNazev,
+                    Mnozstvi: item.Mnozstvi,
+                    Cena: item.Cena,
+                    Zaplaceno: item.Zaplaceno,
+                    AlergenNazev: item.AlergenNazev
+                });
+
+                return acc;
+            }, {});
+
+            console.log("Grouped orders:", orders);
+
             const orderList = document.getElementById("order-list-container");
             orderList.innerHTML = '';
-            orders.forEach(order => {
+
+            Object.values(orders).forEach(order => {
+                console.log("Rendering order:", order);
+
                 const orderItem = document.createElement("div");
                 orderItem.className = "order-item";
-                orderItem.textContent = order.Nazev;
-                orderList.appendChild(orderItem);
+
+                const orderTitle = document.createElement("span");
+                orderTitle.textContent = `Order: ${order.Nazev}  (${order.DatumTransakce})`;
 
                 const dropDown = document.createElement("span");
                 dropDown.className = "drop-down-btn";
-                dropDown.textContent = '▼';
+                dropDown.textContent = ' ▼';
+                dropDown.style.cursor = "pointer";
+
+                orderItem.appendChild(orderTitle);
                 orderItem.appendChild(dropDown);
+
+                const itemList = document.createElement("div");
+                itemList.className = "item-list";
+                itemList.style.display = "none";
+                order.items.forEach(item => {
+                    const itemDetail = document.createElement("p");
+
+                    if (!item.ProduktID) {
+                        itemDetail.textContent = 'No item in transaction';
+                    } else {
+                        let productText = item.ProduktID ? `${item.ProduktNazev}: ` : ''; // If ProduktID is present, show name
+                        let allergenText = item.AlergenNazev ? `Allergens: ${item.AlergenNazev}` : ''; // Show allergens if available
+                        itemDetail.textContent = `${productText}${item.Mnozstvi}X ${item.Cena} euro ${allergenText}`;
+                    }
+
+                    itemList.appendChild(itemDetail);
+                });
+
+
+
+                dropDown.onclick = () => {
+                    itemList.style.display = itemList.style.display === "none" ? "block" : "none";
+                };
+
+                orderItem.appendChild(itemList);
+                orderList.appendChild(orderItem);
             });
         })
-       .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error fetching orders:', error));
 }
-getOrders()
+
+console.log("Initializing order retrieval...");
+getOrders();
