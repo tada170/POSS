@@ -6,6 +6,12 @@ function closeModal() {
     document.getElementById("order-modal").style.display = "none";
 }
 
+function openItemModal(){
+    document.getElementById('add-item-modal').style.display = 'block';
+}
+function  closeItemModal(){
+    document.getElementById('add-item-modal')
+}
 function saveOrder() {
     const orderName = document.getElementById("order-name").value;
     fetch('/order-add', {
@@ -23,40 +29,24 @@ window.onclick = function (event) {
     }
 };
 
-function openModal() {
-    console.log("Opening order modal...");
-    document.getElementById('order-modal').style.display = 'block';
-}
-
-function closeModal() {
-    console.log("Closing order modal...");
-    document.getElementById("order-modal").style.display = "none";
-}
-
-function saveOrder() {
-    const orderName = document.getElementById("order-name").value;
-    console.log(`Saving order with name: ${orderName}`);
-
-    fetch('/order-add', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name: orderName})
-    })
-        .then(response => {
-            console.log("Order saved:", response);
-            alert(`Order '${orderName}' saved!`);
-            closeModal();
-        })
-        .catch(error => console.error("Error saving order:", error));
-}
-
 window.onclick = function (event) {
-    if (event.target === document.getElementById("order-modal")) {
+    if (event.target === document.getElementById("add-item-modal")) {
         console.log("Clicked outside modal, closing it...");
-        closeModal();
+        closeItemModal();
     }
 };
 
+function saveOrderItem() {
+    fetch('/order-add-item/' + document.getElementById('order-id').value, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            ProduktID: document.getElementById('product-id').value,
+            Mnozstvi: document.getElementById('quantity').value,
+            Cena: document.getElementById('price').value
+        })
+    })
+}
 function getOrders() {
     console.log("Fetching orders...");
 
@@ -65,7 +55,6 @@ function getOrders() {
         .then(data => {
             console.log("Data received from server:", data);
 
-            // Group the data by TransakceID (order ID)
             const orders = data.reduce((acc, item) => {
                 const transakceID = item.TransakceID;
                 if (!acc[transakceID]) {
@@ -128,9 +117,13 @@ function getOrders() {
 
                     itemList.appendChild(itemDetail);
                 });
-
-
-
+                const button = document.createElement('button');
+                button.textContent = 'Add Order Item';
+                button.id = 'submitOrderButton';
+                button.onclick = () =>{
+                    openItemModal()
+                }
+                itemList.appendChild(button)
                 dropDown.onclick = () => {
                     itemList.style.display = itemList.style.display === "none" ? "block" : "none";
                 };

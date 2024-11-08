@@ -65,6 +65,19 @@
         </form>
     </div>
 </div>
+<div id="add-item-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeItemModal()">&times;</span>
+        <h2>Add New Order</h2>
+        <form id="order-add-form">
+            <div class="form-group">
+                <label for="order-item-name">Order Name:</label>
+                <input type="text" id="order-item-name" name="Nazev" required>
+            </div>
+            <button type="button" onclick="saveOrderItem()">Save Order Add</button>
+        </form>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="/script/order_add.js"></script>

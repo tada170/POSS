@@ -1,5 +1,6 @@
 const sql = require("mssql");
 const {userId} = require("express-session");
+const {request} = require("express");
 
 
 function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
@@ -72,8 +73,25 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
             console.error("Error adding order:", err);
             res.status(500).json({error: "Error adding order"});
         }
-
     });
+    aplication.put('/order-add-item/:id', async (req, res) => {
+        const pool = await dbPoolPromise;
+        const request = new sql.Request(pool);
+
+        const {productId, quantity, price} = req.body;
+        const orderId = req.params.id;
+        request.input("TransakceID", sql.Int, orderId);
+        request.input("ProduktID", sql.Int, productId);
+        request.input("Mnozstvi", sql.Int, quantity);
+        request.input("Cena", sql.Float, price);
+        await request.query(`
+            INSERT INTO PolozkaTransakce (TransakceID, ProduktID, Mnozstvi, Cena, Zaplaceno)
+            VALUES (@TransakceID, @ProduktID, @Mnozstvi, @Cena, FALSE);
+        `);
+        if (!productId ||!quantity ||!price) {
+            return res.status(400).json({error: "Missing required fields"});
+        }
+    })
 }
 
 module.exports = {defineAPIOrderEndpoints};
