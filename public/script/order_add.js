@@ -1,5 +1,6 @@
 const categoryList = document.getElementById("category-list-container");
 const productList = document.getElementById("product-list-container");
+
 function openModal() {
     document.getElementById('order-modal').style.display = 'block';
 }
@@ -83,7 +84,11 @@ function getProducts(categoryId) {
             data.forEach(product => {
                 const productItem = document.createElement("div");
                 productItem.className = "product-item";
-                productItem.innerHTML = `<h2>${product.Nazev}</h2>`;
+                productItem.innerHTML = `<h3>${product.Nazev}</h3>`;
+                const checkbox = document.createElement("INPUT");
+                checkbox.setAttribute("type", "checkbox");
+                checkbox.value = product.ProduktID;
+                productItem.appendChild(checkbox)
                 productList.appendChild(productItem);
                 productItem.onclick = () => {
                     document.getElementById('product-id').value = product.ProduktID;

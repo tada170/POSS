@@ -40,7 +40,25 @@ h2 {
     flex-wrap: wrap;
     gap: 10px;
 }
-
+#product-list-container {
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+}
+.product-item {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    justify-content: space-between;
+    width: 100%;
+}
+h3 {
+    margin: 5px;
+}
+input[type="checkbox"]{
+    width: 20px;
+    height: 20px;
+}
 .category-item {
     width: calc(33.33% - 10px);
     aspect-ratio: 1;
