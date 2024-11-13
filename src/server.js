@@ -43,7 +43,7 @@ function configureApp(aplication) {
     resave: false,             
     saveUninitialized: false,   
     cookie: {
-      httpOnly: true,         
+      httpOnly: false,
       secure: false,
     }
   }));
