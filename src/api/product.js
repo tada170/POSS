@@ -91,8 +91,6 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
         }
     });
 
-
-
     aplication.get("/products-listed", async (req, res) => {
         try {
             const pool = await dbPoolPromise;
