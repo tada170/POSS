@@ -74,6 +74,33 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
             res.status(500).json({error: "Error adding order"});
         }
     });
+    aplication.post('/order-save/:id', async (req, res) => {
+        const orderId = req.params.id;
+        const items = req.body;
+
+        try {
+            const pool = await dbPoolPromise;
+
+            await Promise.all(items.map(async (item) => {
+                const request = new sql.Request(pool);
+                request.input("TransakceID", sql.Int, orderId);
+                request.input("ProduktID", sql.Int, item.productId);
+                request.input("Mnozstvi", sql.Int, item.quantity);
+                request.input("Cena", sql.Int, item.price);
+
+                await request.query(`
+                INSERT INTO PolozkaTransakce (TransakceID, ProduktID, Mnozstvi,Cena) 
+                VALUES (@TransakceID, @ProduktID, @Mnozstvi, @Cena);
+            `);
+            }));
+
+            res.status(200).json({message: "Order updated successfully"});
+        } catch (err) {
+            console.error("Error updating order:", err);
+            res.status(500).json({error: "Error updating order"});
+        }
+    });
+
     aplication.put('/order-add-item/:id', async (req, res) => {
         const pool = await dbPoolPromise;
         const request = new sql.Request(pool);
