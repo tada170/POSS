@@ -1,6 +1,6 @@
 const categoryList = document.getElementById("category-list-container");
 const productList = document.getElementById("product-list-container");
-
+let currentOrderId = ''
 function openModal() {
     document.getElementById('order-modal').style.display = 'block';
 }
@@ -45,15 +45,39 @@ window.onclick = function (event) {
 };
 
 function saveOrderItem() {
-    fetch('/order-add-item/' + document.getElementById('order-id').value, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            ProduktID: document.getElementById('product-id').value,
-            Mnozstvi: document.getElementById('quantity').value,
-            Cena: document.getElementById('price').value
+    const orderId = currentOrderId;
+    console.log("Order ID:", orderId);
+
+    const checkedItems = [];
+    const checkboxes = document.querySelectorAll('.product-item input[type="checkbox"]:checked');
+
+    checkboxes.forEach(checkbox => {
+        console.log("Checked product ID:", checkbox.value);
+        checkedItems.push({
+            productId: checkbox.id,
+            quantity: 1,
+            price: checkbox.value
+        });
+    });
+
+    console.log("Checked items:", checkedItems);
+
+    if (checkedItems.length === 0) {
+        alert("Please select at least one product.");
+        return;
+    }
+
+    axios.post('/order-save/' + orderId, checkedItems)
+        .then(response => {
+            closeItemModal();
+            getOrders();
         })
-    })
+
+.catch(error => {
+    console.error("Error details:", error);
+    alert('Failed to save the order items.');
+});
+
 }
 function getCategories() {
     fetch('/categories')
@@ -84,17 +108,15 @@ function getProducts(categoryId) {
                 const productItem = document.createElement("div");
                 productItem.className = "product-item";
                 productItem.innerHTML = `<h3>${product.Nazev}</h3>`;
+                const price = document.createElement("p");
+                price.textContent = `Price: ${product.Cena} EUR`;
                 const checkbox = document.createElement("INPUT");
                 checkbox.setAttribute("type", "checkbox");
-                checkbox.value = product.ProduktID;
+                checkbox.id = product.ProduktID;
+                checkbox.value = product.Cena;
+                productItem.appendChild(price)
                 productItem.appendChild(checkbox)
                 productList.appendChild(productItem);
-                productItem.onclick = () => {
-                    document.getElementById('product-id').value = product.ProduktID;
-                    document.getElementById('product-name').value = product.Nazev;
-                    document.getElementById('price').value = product.Cena;
-                    closeItemModal();
-                };
             });
         });
 }
@@ -135,7 +157,7 @@ function getOrders() {
             Object.values(orders).forEach(order => {
                 const orderItem = document.createElement("div");
                 orderItem.className = "order-item";
-
+                orderItem.dataset.transakceId = order.TransakceID;
                 const titleContainer = document.createElement("div");
                 titleContainer.className = "title-container";
 
@@ -175,8 +197,9 @@ function getOrders() {
                 });
                 const button = document.createElement('button');
                 button.textContent = 'Add Order Item';
-                button.id = 'submitOrderButton';
+                button.id = itemList.id;
                 button.onclick = () => {
+                    currentOrderId = button.id;
                     openItemModal()
                 }
                 itemList.appendChild(button)
