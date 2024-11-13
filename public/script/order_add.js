@@ -55,7 +55,6 @@ function saveOrderItem() {
         })
     })
 }
-
 function getCategories() {
     fetch('/categories')
         .then(response => response.json())

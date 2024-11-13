@@ -77,7 +77,6 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
     aplication.put('/order-add-item/:id', async (req, res) => {
         const pool = await dbPoolPromise;
         const request = new sql.Request(pool);
-
         const {productId, quantity, price} = req.body;
         const orderId = req.params.id;
         request.input("TransakceID", sql.Int, orderId);

@@ -161,7 +161,6 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
     aplication.put("/products/:id", async (req, res) => {
         const productId = req.params.id;
         const { Nazev, Cena, Alergeny } = req.body;
-
         try {
             const pool = await dbPoolPromise;
             const transaction = new sql.Transaction(pool);
