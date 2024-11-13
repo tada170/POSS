@@ -175,7 +175,7 @@ function getOrders() {
                 const itemList = document.createElement("div");
                 itemList.className = "item-list";
                 itemList.style.display = "none";
-
+                itemList.id = order.TransakceID;
                 dropDown.onclick = () => {
                     itemList.style.display = itemList.style.display === "none" ? "block" : "none";
                 };
