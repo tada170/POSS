@@ -39,7 +39,7 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
                 ORDER BY
                     t.TransakceID;
 
-`);
+            `);
             console.log("Query executed successfully. Number of records retrieved:", result.recordset.length);
 
             res.json(result.recordset);
@@ -89,9 +89,9 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
                 request.input("Cena", sql.Int, item.price);
 
                 await request.query(`
-                INSERT INTO PolozkaTransakce (TransakceID, ProduktID, Mnozstvi,Cena) 
-                VALUES (@TransakceID, @ProduktID, @Mnozstvi, @Cena);
-            `);
+                    INSERT INTO PolozkaTransakce (TransakceID, ProduktID, Mnozstvi,Cena)
+                    VALUES (@TransakceID, @ProduktID, @Mnozstvi, @Cena);
+                `);
             }));
 
             res.status(200).json({message: "Order updated successfully"});

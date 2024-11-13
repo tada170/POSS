@@ -73,10 +73,10 @@ function saveOrderItem() {
             getOrders();
         })
 
-.catch(error => {
-    console.error("Error details:", error);
-    alert('Failed to save the order items.');
-});
+        .catch(error => {
+            console.error("Error details:", error);
+            alert('Failed to save the order items.');
+        });
 
 }
 function getCategories() {
@@ -100,8 +100,8 @@ function getCategories() {
 }
 function getProducts(categoryId) {
     fetch('/products/' + categoryId)
-       .then(response => response.json())
-       .then(data => {
+        .then(response => response.json())
+        .then(data => {
             productList.innerHTML = '';
 
             data.forEach(product => {
