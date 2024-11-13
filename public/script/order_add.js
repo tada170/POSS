@@ -1,6 +1,6 @@
 const categoryList = document.getElementById("category-list-container");
 const productList = document.getElementById("product-list-container");
-let currentOrderId = ''
+let currentOrderId = '';
 function openModal() {
     document.getElementById('order-modal').style.display = 'block';
 }
