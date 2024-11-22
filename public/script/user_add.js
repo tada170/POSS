@@ -1,6 +1,6 @@
 async function loadRole() {
     try {
-        const response = await axios.get("http://localhost:3000/roles");
+        const response = await axios.get("/roles");
         const roles = response.data;
 
         const roleSelect = document.getElementById("roleID");

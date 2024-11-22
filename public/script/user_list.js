@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   async function fetchUsers() {
     try {
-      const response = await fetch("http://localhost:3000/users");
+      const response = await fetch("/users");
       const users = await response.json();
       const tableBody = document.querySelector("#user-table tbody");
       tableBody.innerHTML = "";
@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function deleteUser(userId) {
     if (confirm("Are you sure you want to delete this user?")) {
       try {
-        await fetch(`http://localhost:3000/users/${userId}`, {
+        await fetch(`/users/${userId}`, {
           method: "DELETE",
         });
         displayMessage("User deleted successfully!", "success");
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   
     try {
-      await fetch(`http://localhost:3000/users/${userId}`, {
+      await fetch(`/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"

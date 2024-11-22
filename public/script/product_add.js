@@ -2,7 +2,7 @@ let allergensList = [];
 
 async function loadCategories() {
     try {
-        const response = await axios.get('http://localhost:3000/categories');
+        const response = await axios.get('/categories');
         const categories = response.data;
         const categorySelect = document.getElementById('categoryID');
 
@@ -17,7 +17,7 @@ async function loadCategories() {
 
 async function loadAllergens() {
     try {
-        const response = await axios.get('http://localhost:3000/allergens');
+        const response = await axios.get('/allergens');
         allergensList = response.data;
         populateAllergenDropdown();
     } catch (error) {
@@ -81,7 +81,7 @@ document.getElementById('productForm').addEventListener('submit', async function
     }).filter(id => id !== null);
 
     try {
-        const response = await axios.post('http://localhost:3000/products', {
+        const response = await axios.post('/products', {
             Nazev: productName,
             Cena: parseFloat(productPrice),
             KategID: parseInt(categoryID),

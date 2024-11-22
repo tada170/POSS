@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchProducts() {
     try {
-        const response = await fetch('http://localhost:3000/products-listed');
+        const response = await fetch('/products-listed');
         const products = await response.json();
         const tableBody = document.querySelector('#product-table tbody');
         tableBody.innerHTML = '';
@@ -62,7 +62,7 @@ async function fetchProducts() {
 
 async function loadAllergens() {
     try {
-        const response = await axios.get('http://localhost:3000/allergens');
+        const response = await axios.get('/allergens');
         allergensList = response.data;
         populateAllergenDropdown();
     } catch (error) {
@@ -159,7 +159,7 @@ document.getElementById('editForm').onsubmit = async function (event) {
     const allergenIds = selectedAllergens.map(allergen => allergen.id).filter(id => id);
 
     try {
-        await axios.put(`http://localhost:3000/products/${productId}`, {
+        await axios.put(`/products/${productId}`, {
             Nazev: productName,
             Cena: productPrice,
             Alergeny: allergenIds

@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function fetchCategories() {
   try {
-    const response = await fetch("http://localhost:3000/categories");
+    const response = await fetch("/categories");
     const categories = await response.json();
     console.log(categories);
 
@@ -73,7 +73,7 @@ async function saveCategoryChanges() {
   };
 
   try {
-    const response = await fetch(`http://localhost:3000/categories/${categoryID}`, {
+    const response = await fetch(`/categories/${categoryID}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
