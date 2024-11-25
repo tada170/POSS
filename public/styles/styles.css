@@ -352,3 +352,23 @@ ul li {
     padding: 10px 0;
     font-weight: bold;
 }
+/* Styling for Back Arrow */
+.back-arrow-container {
+    display: flex;
+    justify-content: space-between; /* Rozdělí šipku a křížek na opačné strany */
+    align-items: center; /* Vertikálně vycentruje prvky */
+    margin-bottom: 10px;
+}
+
+.back-arrow {
+    font-size: 18px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.back-arrow:hover {
+    color: black;
+}
+
