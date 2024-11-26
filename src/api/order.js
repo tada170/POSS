@@ -92,12 +92,14 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
             request.input("Nazev", sql.VarChar, name);
             request.input("UzivatelID", sql.Int, req.session.userId);
 
-            await request.query(`
-                INSERT INTO Transakce (Nazev, UzivatelID)
-                VALUES (@Nazev, @UzivatelID);
-            `);
+            const result = await request.query(`
+            INSERT INTO Transakce (Nazev, UzivatelID)
+            OUTPUT INSERTED.TransakceID
+            VALUES (@Nazev, @UzivatelID);
+        `);
 
-            res.status(201).json({ message: "Order added successfully" });
+            const insertedId = result.recordset[0].TransakceID;
+            res.status(201).json({ message: "Order added successfully", TransakceID: insertedId });
         } catch (err) {
             console.error("Error adding order:", err);
             res.status(500).json({ error: "Error adding order" });

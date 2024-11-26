@@ -30,13 +30,29 @@ function closeItemModal() {
 
 function saveOrder() {
     const orderName = document.getElementById("order-name").value;
+
     fetch('/order-add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: orderName })
-    });
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.TransakceID) {
+                currentOrderId = data.TransakceID; // Nastavení aktuálního ID objednávky
+                console.log("Vytvořená objednávka má ID:", currentOrderId);
+                openItemModal();
+                getOrders();
+            } else {
+                alert("Chyba při vytváření objednávky.");
+            }
+        })
+        .catch(error => {
+            console.error("Chyba při vytváření objednávky:", error);
+            alert("Chyba při vytváření objednávky.");
+        });
+
     closeModal();
-    getOrders();
 }
 
 window.onclick = function (event) {
@@ -109,7 +125,6 @@ function renderOrders(orders) {
         titleContainer.appendChild(dropDown);
         orderItem.appendChild(titleContainer);
 
-        // Zajištění, že položky existují a jsou předány funkci renderOrderItems
         const itemList = renderOrderItems(order);
         dropDown.onclick = () => {
             itemList.style.display = itemList.style.display === "none" ? "block" : "none";
@@ -133,7 +148,6 @@ function groupOrders(data) {
                 Items: []
             };
         }
-        console.log(item);
         if (item.Items.length > 0) {
             item.Items.forEach(
                 item => acc[transakceID].Items.push({
@@ -160,14 +174,24 @@ function renderOrderItems(order) {
         noItemsMessage.textContent = "This order has no items.";
         itemList.appendChild(noItemsMessage);
     } else {
+        const productMap = new Map();
+
         order.Items.forEach(item => {
+            if (productMap.has(item.ProduktNazev)) {
+                productMap.set(item.ProduktNazev, productMap.get(item.ProduktNazev) + item.Mnozstvi);
+            } else {
+                productMap.set(item.ProduktNazev, item.Mnozstvi);
+            }
+        });
+        productMap.forEach((quantity, productName) => {
+            const item = order.Items.find(i => i.ProduktNazev === productName);
             const itemDetail = document.createElement("p");
             const allergens = item.Alergeny.length > 0 ? item.Alergeny.join(", ") : "None";
-            itemDetail.textContent = `${item.ProduktNazev}: ${item.Mnozstvi}x ${item.Cena.toFixed(2)} EUR (Allergens: ${allergens})`;
+            itemDetail.textContent = `${productName}: ${quantity}x ${item.Cena.toFixed(2)} EUR (Allergens: ${allergens})`;
             itemList.appendChild(itemDetail);
         });
-    }
 
+    }
     const button = document.createElement('button');
     button.textContent = 'Add Order Item';
     button.id = itemList.id;
