@@ -83,7 +83,7 @@ function populateAllergenDropdown() {
         const selectedOptions = Array.from(allergenDropdown.selectedOptions);
         selectedOptions.forEach(option => {
             addAllergenToEdit({ id: option.value, name: option.textContent });
-            allergenDropdown.value = ''; // Resetuje dropdown
+            allergenDropdown.value = '';
         });
     };
 }

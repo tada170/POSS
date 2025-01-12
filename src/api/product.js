@@ -35,15 +35,12 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
             const ProduktID = productResult.recordset[0].ProduktID;
             console.log("Inserted product with ID:", ProduktID);
 
-            const insertAllergens = new sql.Request(transaction);
+            //const insertAllergens = new sql.Request(transaction);
             for (const alergen of Alergeny) {
                 const insertAllergen = new sql.Request(transaction);
                 insertAllergen.input("ProduktID", sql.Int, ProduktID);
                 insertAllergen.input("AlergenID", sql.Int, alergen);
 
-                console.log(
-                    `Inserting allergen with ID ${alergenID} for product ID ${ProduktID}`
-                );
 
                 await insertAllergen.query(`
                     INSERT INTO ProduktAlergen (ProduktID, AlergenID)
@@ -73,7 +70,7 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
     });
     aplication.get("/products/:categoryId", async (req, res) => {
         try {
-            const categoryId = req.params.categoryId;  // Get the categoryId from the URL
+            const categoryId = req.params.categoryId;
             const pool = await dbPoolPromise;
 
             const result = await pool.request()
@@ -95,20 +92,9 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
         try {
             const pool = await dbPoolPromise;
             const result = await pool.request().query(`
-                SELECT 
-                    p.ProduktID, 
-                    p.Nazev AS ProduktNazev, 
-                    p.Cena, 
-                    a.AlergenID, 
-                    a.Nazev AS AlergenNazev
-                FROM 
-                    Produkt p
-                LEFT JOIN 
-                    ProduktAlergen pa ON p.ProduktID = pa.ProduktID
-                LEFT JOIN 
-                    Alergen a ON pa.AlergenID = a.AlergenID
-                ORDER BY 
-                    p.ProduktID, a.AlergenID;
+                SELECT *
+                FROM V_ProduktAlergen
+                ORDER BY ProduktID, AlergenID;
             `);
             res.json(result.recordset);
         } catch (err) {
@@ -116,6 +102,7 @@ function defineAPIProductEndpoints(aplication, dbPoolPromise) {
             res.status(500).send("Error retrieving products");
         }
     });
+
     aplication.delete("/products/:id", async (req, res) => {
         const productId = req.params.id;
         let transaction;

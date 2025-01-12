@@ -46,7 +46,7 @@ function addAllergen() {
     const selectedAllergensDiv = document.getElementById("selected-allergens");
 
     if (selectedAllergenID) {
-        const selectedAllergen = allergensList.find(allergen => allergen.AlergenID === selectedAllergenID);
+        const selectedAllergen = allergensList.find(allergen => allergen.AlergenID == selectedAllergenID);
         const allergenDiv = document.createElement("div");
         allergenDiv.className = "selected-allergen";
         allergenDiv.textContent = selectedAllergen.Nazev;

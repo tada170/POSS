@@ -9,32 +9,9 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
             console.log("Database pool obtained");
 
             const result = await pool.request().query(`
-            SELECT
-                t.TransakceID,
-                t.Nazev AS TransakceNazev,
-                u.Jmeno + ' ' + u.Prijmeni AS UzivatelJmeno,
-                t.DatumTransakce,
-                pt.PolozkaTransakceID,
-                pt.ProduktID,
-                p.Nazev AS ProduktNazev,
-                pt.Mnozstvi,
-                pt.Cena,
-                pt.Zaplaceno,
-                a.Nazev AS AlergenNazev
-            FROM
-                Transakce t
-                    LEFT JOIN
-                Uzivatel u ON t.UzivatelID = u.UzivatelID
-                    LEFT JOIN
-                PolozkaTransakce pt ON t.TransakceID = pt.TransakceID
-                    LEFT JOIN
-                Produkt p ON pt.ProduktID = p.ProduktID
-                    LEFT JOIN
-                ProduktAlergen pa ON p.ProduktID = pa.ProduktID
-                    LEFT JOIN
-                Alergen a ON pa.AlergenID = a.AlergenID
-            ORDER BY
-                t.TransakceID, pt.PolozkaTransakceID;
+                SELECT *
+                FROM V_TransakceDetail
+                ORDER BY TransakceID, PolozkaTransakceID;
         `);
             console.log("Query executed successfully. Number of records retrieved:", result.recordset.length);
 
