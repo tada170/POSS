@@ -444,8 +444,24 @@ ul li {
         margin: 0;
         justify-content: space-between;
         width: 100%;
-    }.product-item {
+    }
+    .product-item {
          display: flex;
          width: 100%;
      }
+    .login_container{
+        padding:5%;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    select,
+    label,
+    .form-control{
+        width: 90%;
+        margin-left:5%;
+    }
+    td{
+        white-space: wrap;
+    }
 }
