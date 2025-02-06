@@ -2,6 +2,8 @@ const categoryList = document.getElementById("category-list-container");
 const productList = document.getElementById("product-list-container");
 let currentOrderId = '';
 let selectedItems = [];
+let selectedItemsToPay =[];
+let divId = 0
 
 function goBack() {
     categoryList.style.display = 'flex';
@@ -79,7 +81,17 @@ function saveOrderItem() {
             alert('Failed to save the order items.');
         });
 }
+function handleCheckboxChangePay(event) {
+    const ordecheckBox = event.target;
+    const id = ordecheckBox.id.split('-');
+    const orderId = id[1];
+    const productId = id[0];
 
+    if (ordecheckBox.checked) {
+        //ordecheckBox.class = 'ordecheck'
+    }
+
+}
 function handleCheckboxChange(event) {
     const checkbox = event.target;
     const productId = checkbox.id;
@@ -183,12 +195,22 @@ function renderOrderItems(order) {
                 productMap.set(item.ProduktNazev, item.Mnozstvi);
             }
         });
+
         productMap.forEach((quantity, productName) => {
             const item = order.Items.find(i => i.ProduktNazev === productName);
             const itemDetail = document.createElement("p");
             const allergens = item.Alergeny.length > 0 ? item.Alergeny.join(", ") : "None";
-            itemDetail.textContent = `${productName}: ${quantity}x ${item.Cena.toFixed(2)} EUR (Allergens: ${allergens})`;
-            itemList.appendChild(itemDetail);
+            itemDetail.textContent = `${productName}: ${quantity}x ${item.Cena.toFixed(2)} Czk (Allergens: ${allergens})`;
+            const itemDiv = document.createElement("div");
+            itemDiv.id = divId;
+            divId++;
+            const checkBox = document.createElement('input')
+            checkBox.type = "checkbox";
+            checkBox.id = item.ProduktID + '-'+ itemList.id;
+            checkBox.onchange = handleCheckboxChangePay;
+            itemDetail.appendChild(checkBox);
+            itemDiv.appendChild(itemDetail);
+            itemList.appendChild(itemDiv);
         });
 
     }
@@ -243,7 +265,7 @@ function getProducts(categoryId) {
                 productItem.className = "product-item";
                 productItem.innerHTML = `<h3>${product.Nazev}</h3>`;
                 const price = document.createElement("p");
-                price.textContent = `Price: ${product.Cena} EUR`;
+                price.textContent = `Price: ${product.Cena} Czk`;
                 productItem.appendChild(price);
 
                 const checkbox = document.createElement("input");

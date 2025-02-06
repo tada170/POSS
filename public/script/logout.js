@@ -1,5 +1,5 @@
 let logoutTimeout;
-const inactivityLimit = 15 * 60 * 1000; 
+const inactivityLimit = 15 * 60 * 1000;
 
 function logoutUser() {
     console.log('User logged out due to inactivity.');
