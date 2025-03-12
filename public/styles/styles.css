@@ -104,7 +104,9 @@ select,
     height: 40px;
     box-sizing: border-box;
 }
-
+.product-item input[type="number"]{
+    width: 50%;
+}
 /* Button Styling */
 button,
 input[type="submit"] {

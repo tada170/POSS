@@ -16,7 +16,7 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
             console.log("Query executed successfully. Number of records retrieved:", result.recordset.length);
 
             const transactions = new Map();
-
+            console.log(result)
             result.recordset.forEach(row => {
                 if (!transactions.has(row.TransakceID)) {
                     transactions.set(row.TransakceID, {

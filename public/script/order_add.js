@@ -92,21 +92,7 @@ function handleCheckboxChangePay(event) {
     }
 
 }
-function handleCheckboxChange(event) {
-    const checkbox = event.target;
-    const productId = checkbox.id;
-    const price = checkbox.value;
 
-    if (checkbox.checked) {
-        selectedItems.push({
-            productId: productId,
-            quantity: 1,
-            price: price
-        });
-    } else {
-        selectedItems = selectedItems.filter(item => item.productId !== productId);
-    }
-}
 
 function fetchOrders() {
     return fetch('/order')
@@ -264,20 +250,51 @@ function getProducts(categoryId) {
                 const productItem = document.createElement("div");
                 productItem.className = "product-item";
                 productItem.innerHTML = `<h3>${product.Nazev}</h3>`;
+
                 const price = document.createElement("p");
                 price.textContent = `Price: ${product.Cena} Czk`;
                 productItem.appendChild(price);
+
+                const quantityInput = document.createElement("input");
+                quantityInput.type = "number";
+                quantityInput.min = "1";
+                quantityInput.value = "1";
+                quantityInput.id = `quantity-${product.ProduktID}`;
 
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
                 checkbox.value = product.Cena;
                 checkbox.id = product.ProduktID;
-                checkbox.onchange = handleCheckboxChange;
+                checkbox.onchange = () => handleCheckboxChange(checkbox, quantityInput);
+
+                quantityInput.oninput = () => handleCheckboxChange(checkbox, quantityInput);
 
                 productItem.appendChild(checkbox);
+                productItem.appendChild(quantityInput);
                 productList.appendChild(productItem);
             });
         });
+}
+
+function handleCheckboxChange(checkbox, quantityInput) {
+    const productId = checkbox.id;
+    const price = checkbox.value;
+    const quantity = parseInt(quantityInput.value) || 1;
+
+    if (checkbox.checked) {
+        const existingItem = selectedItems.find(item => item.productId === productId);
+        if (existingItem) {
+            existingItem.quantity = quantity;
+        } else {
+            selectedItems.push({
+                productId: productId,
+                quantity: quantity,
+                price: price
+            });
+        }
+    } else {
+        selectedItems = selectedItems.filter(item => item.productId !== productId);
+    }
 }
 
 document.addEventListener("DOMContentLoaded", getOrders);
