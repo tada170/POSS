@@ -120,7 +120,9 @@ input[type="submit"] {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+.ordecheck{
 
+}
 button:hover,
 input[type="submit"]:hover {
     background-color: #0056b3;
@@ -373,8 +375,8 @@ ul li {
 .back-arrow:hover {
     color: black;
 }
-.orderchecked{
-    background: #343a40;
+.paid{
+    background: rgba(0, 184, 0, 0.73);
 }
 @media screen and (max-width: 768px) {
     .container,

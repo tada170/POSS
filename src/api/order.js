@@ -12,7 +12,7 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
                 SELECT *
                 FROM V_TransakceDetail
                 ORDER BY TransakceID, PolozkaTransakceID;
-        `);
+            `);
             console.log("Query executed successfully. Number of records retrieved:", result.recordset.length);
 
             const transactions = new Map();
@@ -56,10 +56,10 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
     });
 
     aplication.post('/order-add', async (req, res) => {
-        const { name } = req.body;
+        const {name} = req.body;
 
         if (!name) {
-            return res.status(400).json({ error: "Missing order name" });
+            return res.status(400).json({error: "Missing order name"});
         }
 
         try {
@@ -70,16 +70,16 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
             request.input("UzivatelID", sql.Int, req.session.userId);
 
             const result = await request.query(`
-            INSERT INTO Transakce (Nazev, UzivatelID)
-            OUTPUT INSERTED.TransakceID
-            VALUES (@Nazev, @UzivatelID);
-        `);
+                INSERT INTO Transakce (Nazev, UzivatelID)
+                    OUTPUT INSERTED.TransakceID
+                VALUES (@Nazev, @UzivatelID);
+            `);
 
             const insertedId = result.recordset[0].TransakceID;
-            res.status(201).json({ message: "Order added successfully", TransakceID: insertedId });
+            res.status(201).json({message: "Order added successfully", TransakceID: insertedId});
         } catch (err) {
             console.error("Error adding order:", err);
-            res.status(500).json({ error: "Error adding order" });
+            res.status(500).json({error: "Error adding order"});
         }
     });
 
@@ -91,24 +91,71 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
             const pool = await dbPoolPromise;
 
             await Promise.all(items.map(async (item) => {
+                const quantity = item.quantity;
+
+                // Pro každý item, který má množství větší než 1, vytvoříme tolik záznamů, kolik je položek
+                for (let i = 0; i < quantity; i++) {
+                    const request = new sql.Request(pool);
+                    request.input("TransakceID", sql.Int, orderId);
+                    request.input("ProduktID", sql.Int, item.productId);
+                    request.input("Mnozstvi", sql.Int, 1);  // Množství bude vždy 1
+                    request.input("Cena", sql.Int, item.price);
+
+                    await request.query(`
+                        INSERT INTO PolozkaTransakce (TransakceID, ProduktID, Mnozstvi, Cena)
+                        VALUES (@TransakceID, @ProduktID, @Mnozstvi, @Cena);
+                    `);
+                }
+            }));
+
+            res.status(200).json({message: "Order updated successfully"});
+        } catch (err) {
+            console.error("Error updating order:", err);
+            res.status(500).json({error: "Error updating order"});
+        }
+    });
+
+    aplication.post('/payment/:id', async (req, res) => {
+        const orderId = req.params.id;
+        const { paymentData } = req.body;
+        console.log("Paid Order ID: ", orderId);
+        console.log("Payment Data: ", paymentData);
+
+        if (!Array.isArray(paymentData) || paymentData.length === 0) {
+            return res.status(400).json({ error: "No items to pay." });
+        }
+
+        try {
+            const pool = await dbPoolPromise;
+
+            await Promise.all(paymentData.map(async (item) => {
                 const request = new sql.Request(pool);
                 request.input("TransakceID", sql.Int, orderId);
-                request.input("ProduktID", sql.Int, item.productId);
-                request.input("Mnozstvi", sql.Int, item.quantity);
-                request.input("Cena", sql.Int, item.price);
+                request.input("ProduktID", sql.Int, item.ProduktID);
+                request.input("Mnozstvi", sql.Int, item.Mnozstvi);
 
                 await request.query(`
-                    INSERT INTO PolozkaTransakce (TransakceID, ProduktID, Mnozstvi, Cena)
-                    VALUES (@TransakceID, @ProduktID, @Mnozstvi, @Cena);
+                    WITH TopRows AS (
+                        SELECT TOP (@Mnozstvi) PolozkaTransakceID
+                        FROM PolozkaTransakce
+                        WHERE ProduktID = @ProduktID
+                          AND TransakceID = @TransakceID
+                          AND Zaplaceno = 0
+                        ORDER BY PolozkaTransakceID
+                    )
+                    UPDATE PolozkaTransakce
+                    SET Zaplaceno = 1
+                    WHERE PolozkaTransakceID IN (SELECT PolozkaTransakceID FROM TopRows);
                 `);
             }));
 
-            res.status(200).json({ message: "Order updated successfully" });
+            res.status(200).json({ message: "Payment processed successfully" });
         } catch (err) {
-            console.error("Error updating order:", err);
-            res.status(500).json({ error: "Error updating order" });
+            console.error("Error processing payment:", err);
+            res.status(500).json({ error: "Error processing payment" });
         }
     });
+
 }
 
-module.exports = { defineAPIOrderEndpoints };
+module.exports = {defineAPIOrderEndpoints};

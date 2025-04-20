@@ -2,7 +2,8 @@ const categoryList = document.getElementById("category-list-container");
 const productList = document.getElementById("product-list-container");
 let currentOrderId = '';
 let selectedItems = [];
-let selectedItemsToPay =[];
+let selectedItemsToPay = [];
+let remaining = 0
 let divId = 0
 
 function goBack() {
@@ -35,8 +36,8 @@ function saveOrder() {
 
     fetch('/order-add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: orderName })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: orderName})
     })
         .then(response => response.json())
         .then(data => {
@@ -81,18 +82,15 @@ function saveOrderItem() {
             alert('Failed to save the order items.');
         });
 }
-function handleCheckboxChangePay(event) {
-    const ordecheckBox = event.target;
-    const id = ordecheckBox.id.split('-');
-    const orderId = id[1];
-    const productId = id[0];
 
-    if (ordecheckBox.checked) {
-        //ordecheckBox.class = 'ordecheck'
+
+function togglePayButton(orderId) {
+    const hasItems = selectedItemsToPay.some(item => item.TransakceID === orderId);
+    const payBtn = document.getElementById(`pay-button-${orderId}`);
+    if (payBtn) {
+        payBtn.style.display = hasItems ? 'block' : 'none';
     }
-
 }
-
 
 function fetchOrders() {
     return fetch('/order')
@@ -149,18 +147,19 @@ function groupOrders(data) {
         if (item.Items.length > 0) {
             item.Items.forEach(
                 item => acc[transakceID].Items.push({
-                ProduktID: item.ProduktID,
-                ProduktNazev: item.ProduktNazev || "Unnamed Product",
-                Mnozstvi: item.Mnozstvi || 0,
-                Cena: item.Cena || 0,
-                Zaplaceno: item.Zaplaceno || false,
-                Alergeny: item.Alergeny || []
-            })
-        )
+                    ProduktID: item.ProduktID,
+                    ProduktNazev: item.ProduktNazev || "Unnamed Product",
+                    Mnozstvi: item.Mnozstvi || 0,
+                    Cena: item.Cena || 0,
+                    Zaplaceno: item.Zaplaceno || false,
+                    Alergeny: item.Alergeny || []
+                })
+            )
         }
         return acc;
     }, {});
 }
+
 function renderOrderItems(order) {
     const itemList = document.createElement("div");
     itemList.className = "item-list";
@@ -182,24 +181,58 @@ function renderOrderItems(order) {
             }
         });
 
+        let totalCheckedItems = 0;
+        const checkboxes = [];
+
         productMap.forEach((quantity, productName) => {
             const item = order.Items.find(i => i.ProduktNazev === productName);
             const itemDetail = document.createElement("p");
             const allergens = item.Alergeny.length > 0 ? item.Alergeny.join(", ") : "None";
             itemDetail.textContent = `${productName}: ${quantity}x ${item.Cena.toFixed(2)} Czk (Allergens: ${allergens})`;
+
             const itemDiv = document.createElement("div");
-            itemDiv.id = divId;
-            divId++;
-            const checkBox = document.createElement('input')
+            itemDiv.id = `item-${item.ProduktID}-${itemList.id}`;
+
+            const checkBox = document.createElement('input');
             checkBox.type = "checkbox";
-            checkBox.id = item.ProduktID + '-'+ itemList.id;
-            checkBox.onchange = handleCheckboxChangePay;
+            checkBox.id = item.ProduktID + '-' + itemList.id;
+            checkBox.onchange = (e) => handleCheckboxChangePay(e, checkboxes);
+            remaining = quantity
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.value = 0;
+            quantityInput.min = 0;
+            quantityInput.max = remaining;
+            quantityInput.disabled = true;
+            quantityInput.id = `quantity-${item.ProduktID}-${itemList.id}`;
+
+            const remainingText = document.createElement('span');
+            remainingText.id = `remaining-${item.ProduktID}-${itemList.id}`;
+            remainingText.textContent = `Remaining to pay: ${remaining}`;
+
+            checkBox.onchange = () => {
+                quantityInput.disabled = !checkBox.checked;
+                quantityInput.value = 0;
+            };
+
             itemDetail.appendChild(checkBox);
+            itemDetail.appendChild(quantityInput);
+            itemDetail.appendChild(remainingText);
             itemDiv.appendChild(itemDetail);
             itemList.appendChild(itemDiv);
+
+            checkboxes.push({itemId: item.ProduktID, quantityInput, itemCost: item.Cena, remainingText});
         });
 
+        const payButton = document.createElement('button');
+        payButton.textContent = 'Pay';
+        payButton.disabled = false;
+        payButton.id = `pay-${itemList.id}`;
+        payButton.onclick = () => handlePayment(order.TransakceID, checkboxes);
+
+        itemList.appendChild(payButton);
     }
+
     const button = document.createElement('button');
     button.textContent = 'Add Order Item';
     button.id = itemList.id;
@@ -209,6 +242,63 @@ function renderOrderItems(order) {
     };
     itemList.appendChild(button);
     return itemList;
+}
+
+
+function handleCheckboxChangePay(event, checkboxes) {
+    const payButton = document.getElementById(`pay-${event.target.closest(".item-list").id}`);
+    const checkedItems = checkboxes.filter(checkbox => checkbox.quantityInput.disabled === false && checkbox.quantityInput.value > 0);
+    payButton.disabled = checkedItems.length === 0;
+
+}
+
+function handlePayment(transactionId, checkboxes) {
+    const paymentData = [];
+    let allPaid = true
+    let ammount = 0
+    checkboxes.forEach(checkbox => {
+        if (checkbox.quantityInput.disabled === false && checkbox.quantityInput.value > 0) {
+            paymentData.push({
+                ProduktID: checkbox.itemId,
+                Mnozstvi: checkbox.quantityInput.value
+            });
+
+            ammount += checkbox.quantityInput.value * checkbox.itemCost
+            const remainingItems = checkbox.remainingText.innerHTML.split(" ")[3] - checkbox.quantityInput.value
+            checkbox.remainingText.innerHTML = "Remaining to pay: " + remainingItems
+            checkbox.quantityInput.max = remainingItems
+            checkbox.quantityInput.value = 0
+        }
+        if (checkbox.quantityInput.max != 0){
+            allPaid = false
+        }
+    });
+    if (allPaid){
+        const transaction = document.querySelector(`[data-transakce-id="${transactionId}"]`);
+        transaction.classList.add("paid");
+        console.log("all is paid")
+    }
+    alert("K zaplaceni " + ammount)
+    if (paymentData.length > 0) {
+        console.log(paymentData);
+        fetch(`payment/${transactionId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({paymentData})
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('Payment processed successfully!');
+            })
+            .catch(error => {
+                console.error('Error processing payment:', error);
+                alert('Error processing payment.');
+            });
+    } else {
+        alert('Please select items to pay for.');
+    }
 }
 
 
@@ -284,17 +374,18 @@ function handleCheckboxChange(checkbox, quantityInput) {
     if (checkbox.checked) {
         const existingItem = selectedItems.find(item => item.productId === productId);
         if (existingItem) {
-            existingItem.quantity = quantity;
+            existingItem.quantity += quantity;
         } else {
             selectedItems.push({
                 productId: productId,
-                quantity: quantity,
-                price: price
+                price: price,
+                quantity: quantity
             });
         }
     } else {
         selectedItems = selectedItems.filter(item => item.productId !== productId);
     }
 }
+
 
 document.addEventListener("DOMContentLoaded", getOrders);
