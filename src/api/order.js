@@ -93,12 +93,12 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
             await Promise.all(items.map(async (item) => {
                 const quantity = item.quantity;
 
-                // Pro každý item, který má množství větší než 1, vytvoříme tolik záznamů, kolik je položek
+
                 for (let i = 0; i < quantity; i++) {
                     const request = new sql.Request(pool);
                     request.input("TransakceID", sql.Int, orderId);
                     request.input("ProduktID", sql.Int, item.productId);
-                    request.input("Mnozstvi", sql.Int, 1);  // Množství bude vždy 1
+                    request.input("Mnozstvi", sql.Int, 1);
                     request.input("Cena", sql.Int, item.price);
 
                     await request.query(`
@@ -153,6 +153,28 @@ function defineAPIOrderEndpoints(aplication, dbPoolPromise) {
         } catch (err) {
             console.error("Error processing payment:", err);
             res.status(500).json({ error: "Error processing payment" });
+        }
+    });
+
+    aplication.get('/remaining/:id', async (req, res) => {
+        const orderId = req.params.id;
+
+        try {
+            const pool = await dbPoolPromise;
+
+            const request = new sql.Request(pool);
+            request.input("TransakceID", sql.Int, orderId);
+            const result = await request.query(`
+                SELECT ProduktID, COUNT(*) AS Mnozstvi
+                FROM PolozkaTransakce
+                WHERE TransakceID = @TransakceID AND Zaplaceno = 0
+                group by ProduktID
+        `);
+
+            res.status(200).json(result.recordset);
+        } catch (err) {
+            console.error("Error fetching remaining payment info:", err);
+            res.status(500).json({ error: "Failed to fetch remaining data" });
         }
     });
 

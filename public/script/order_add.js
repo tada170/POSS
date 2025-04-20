@@ -98,11 +98,11 @@ function fetchOrders() {
         .catch(() => []);
 }
 
-function renderOrders(orders) {
+async function renderOrders(orders) {
     const orderList = document.getElementById("order-list-container");
     orderList.innerHTML = '';
 
-    Object.values(orders).forEach(order => {
+    for (const order of Object.values(orders)) {
         const orderItem = document.createElement("div");
         orderItem.className = "order-item";
         orderItem.dataset.transakceId = order.TransakceID;
@@ -121,14 +121,14 @@ function renderOrders(orders) {
         titleContainer.appendChild(dropDown);
         orderItem.appendChild(titleContainer);
 
-        const itemList = renderOrderItems(order);
+        const itemList = await renderOrderItems(order);
         dropDown.onclick = () => {
             itemList.style.display = itemList.style.display === "none" ? "block" : "none";
         };
 
         orderItem.appendChild(itemList);
         orderList.appendChild(orderItem);
-    });
+    }
 }
 
 
@@ -160,7 +160,7 @@ function groupOrders(data) {
     }, {});
 }
 
-function renderOrderItems(order) {
+async function renderOrderItems(order) {
     const itemList = document.createElement("div");
     itemList.className = "item-list";
     itemList.style.display = "none";
@@ -170,68 +170,79 @@ function renderOrderItems(order) {
         const noItemsMessage = document.createElement("p");
         noItemsMessage.textContent = "This order has no items.";
         itemList.appendChild(noItemsMessage);
-    } else {
-        const productMap = new Map();
 
-        order.Items.forEach(item => {
-            if (productMap.has(item.ProduktNazev)) {
-                productMap.set(item.ProduktNazev, productMap.get(item.ProduktNazev) + item.Mnozstvi);
-            } else {
-                productMap.set(item.ProduktNazev, item.Mnozstvi);
-            }
-        });
-
-        let totalCheckedItems = 0;
-        const checkboxes = [];
-
-        productMap.forEach((quantity, productName) => {
-            const item = order.Items.find(i => i.ProduktNazev === productName);
-            const itemDetail = document.createElement("p");
-            const allergens = item.Alergeny.length > 0 ? item.Alergeny.join(", ") : "None";
-            itemDetail.textContent = `${productName}: ${quantity}x ${item.Cena.toFixed(2)} Czk (Allergens: ${allergens})`;
-
-            const itemDiv = document.createElement("div");
-            itemDiv.id = `item-${item.ProduktID}-${itemList.id}`;
-
-            const checkBox = document.createElement('input');
-            checkBox.type = "checkbox";
-            checkBox.id = item.ProduktID + '-' + itemList.id;
-            checkBox.onchange = (e) => handleCheckboxChangePay(e, checkboxes);
-            remaining = quantity
-            const quantityInput = document.createElement('input');
-            quantityInput.type = 'number';
-            quantityInput.value = 0;
-            quantityInput.min = 0;
-            quantityInput.max = remaining;
-            quantityInput.disabled = true;
-            quantityInput.id = `quantity-${item.ProduktID}-${itemList.id}`;
-
-            const remainingText = document.createElement('span');
-            remainingText.id = `remaining-${item.ProduktID}-${itemList.id}`;
-            remainingText.textContent = `Remaining to pay: ${remaining}`;
-
-            checkBox.onchange = () => {
-                quantityInput.disabled = !checkBox.checked;
-                quantityInput.value = 0;
-            };
-
-            itemDetail.appendChild(checkBox);
-            itemDetail.appendChild(quantityInput);
-            itemDetail.appendChild(remainingText);
-            itemDiv.appendChild(itemDetail);
-            itemList.appendChild(itemDiv);
-
-            checkboxes.push({itemId: item.ProduktID, quantityInput, itemCost: item.Cena, remainingText});
-        });
-
-        const payButton = document.createElement('button');
-        payButton.textContent = 'Pay';
-        payButton.disabled = false;
-        payButton.id = `pay-${itemList.id}`;
-        payButton.onclick = () => handlePayment(order.TransakceID, checkboxes);
-
-        itemList.appendChild(payButton);
     }
+
+    const productMap = new Map();
+    order.Items.forEach(item => {
+        if (productMap.has(item.ProduktNazev)) {
+            productMap.set(item.ProduktNazev, productMap.get(item.ProduktNazev) + item.Mnozstvi);
+        } else {
+            productMap.set(item.ProduktNazev, item.Mnozstvi);
+        }
+    });
+
+    let remainingMap = new Map();
+    try {
+        const response = await fetch(`remaining/${order.TransakceID}`);
+        const data = await response.json();
+        data.forEach(item => {
+            remainingMap.set(item.ProduktID, item.Mnozstvi);
+        });
+    } catch (error) {
+        console.error("Chyba při načítání zbývajících položek:", error);
+    }
+
+    const checkboxes = [];
+
+    productMap.forEach((quantity, productName) => {
+        const item = order.Items.find(i => i.ProduktNazev === productName);
+        const itemDetail = document.createElement("p");
+        const allergens = item.Alergeny.length > 0 ? item.Alergeny.join(", ") : "None";
+        itemDetail.textContent = `${productName}: ${quantity}x ${item.Cena.toFixed(2)} Czk (Allergens: ${allergens})`;
+
+        const itemDiv = document.createElement("div");
+        itemDiv.id = `item-${item.ProduktID}-${itemList.id}`;
+
+        const checkBox = document.createElement('input');
+        checkBox.type = "checkbox";
+        checkBox.id = item.ProduktID + '-' + itemList.id;
+        checkBox.onchange = (e) => handleCheckboxChangePay(e, checkboxes);
+
+        const remaining = remainingMap.get(item.ProduktID) ?? 0;
+
+        const quantityInput = document.createElement('input');
+        quantityInput.type = 'number';
+        quantityInput.value = 0;
+        quantityInput.min = 0;
+        quantityInput.max = remaining;
+        quantityInput.disabled = true;
+        quantityInput.id = `quantity-${item.ProduktID}-${itemList.id}`;
+
+        const remainingText = document.createElement('span');
+        remainingText.id = `remaining-${item.ProduktID}-${itemList.id}`;
+        remainingText.textContent = `Remaining to pay: ${remaining}`;
+
+        checkBox.onchange = () => {
+            quantityInput.disabled = !checkBox.checked;
+            quantityInput.value = 0;
+        };
+
+        itemDetail.appendChild(checkBox);
+        itemDetail.appendChild(quantityInput);
+        itemDetail.appendChild(remainingText);
+        itemDiv.appendChild(itemDetail);
+        itemList.appendChild(itemDiv);
+
+        checkboxes.push({itemId: item.ProduktID, quantityInput, itemCost: item.Cena, remainingText});
+    });
+
+    const payButton = document.createElement('button');
+    payButton.textContent = 'Pay';
+    payButton.disabled = false;
+    payButton.id = `pay-${itemList.id}`;
+    payButton.onclick = () => handlePayment(order.TransakceID, checkboxes);
+    itemList.appendChild(payButton);
 
     const button = document.createElement('button');
     button.textContent = 'Add Order Item';
@@ -241,6 +252,7 @@ function renderOrderItems(order) {
         openItemModal();
     };
     itemList.appendChild(button);
+
     return itemList;
 }
 
@@ -252,36 +264,49 @@ function handleCheckboxChangePay(event, checkboxes) {
 
 }
 
-function handlePayment(transactionId, checkboxes) {
+async function handlePayment(transactionId, checkboxes) {
     const paymentData = [];
-    let allPaid = true
-    let ammount = 0
+    let ammount = 0;
+
+    const response = await fetch(`remaining/${transactionId}`);
+    const remainingData = await response.json();
+
+    let allPaid = true;
+
     checkboxes.forEach(checkbox => {
-        if (checkbox.quantityInput.disabled === false && checkbox.quantityInput.value > 0) {
+        const remainingItem = remainingData.find(item => item.ProduktID === checkbox.itemId);
+        let remaining = remainingItem ? remainingItem.Mnozstvi : 0;
+        const quantity = parseInt(checkbox.quantityInput.value);
+
+        if (!checkbox.quantityInput.disabled && quantity > 0) {
             paymentData.push({
                 ProduktID: checkbox.itemId,
-                Mnozstvi: checkbox.quantityInput.value
+                Mnozstvi: quantity
             });
 
-            ammount += checkbox.quantityInput.value * checkbox.itemCost
-            const remainingItems = checkbox.remainingText.innerHTML.split(" ")[3] - checkbox.quantityInput.value
-            checkbox.remainingText.innerHTML = "Remaining to pay: " + remainingItems
-            checkbox.quantityInput.max = remainingItems
-            checkbox.quantityInput.value = 0
+            ammount += quantity * checkbox.itemCost;
+            remaining -= quantity;
+
+            checkbox.remainingText.innerHTML = "Remaining to pay: " + remaining;
+            checkbox.quantityInput.max = remaining;
+            checkbox.quantityInput.value = 0;
         }
-        if (checkbox.quantityInput.max != 0){
-            allPaid = false
+
+        if (remaining > 0) {
+            allPaid = false;
         }
     });
-    if (allPaid){
+
+    if (allPaid) {
         const transaction = document.querySelector(`[data-transakce-id="${transactionId}"]`);
         transaction.classList.add("paid");
-        console.log("all is paid")
+        console.log("all is paid");
     }
-    alert("K zaplaceni " + ammount)
+
+    alert("K zaplacení: " + ammount + " Kč");
+
     if (paymentData.length > 0) {
-        console.log(paymentData);
-        fetch(`payment/${transactionId}`, {
+        fetch(`/payment/${transactionId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -290,17 +315,16 @@ function handlePayment(transactionId, checkboxes) {
         })
             .then(response => response.json())
             .then(data => {
-                alert('Payment processed successfully!');
+                alert('Platba úspěšně zpracována!');
             })
             .catch(error => {
-                console.error('Error processing payment:', error);
-                alert('Error processing payment.');
+                console.error('Chyba při zpracování platby:', error);
+                alert('Chyba při zpracování platby.');
             });
     } else {
-        alert('Please select items to pay for.');
+        alert('Vyberte prosím položky k zaplacení.');
     }
 }
-
 
 function getOrders() {
     fetchOrders()
