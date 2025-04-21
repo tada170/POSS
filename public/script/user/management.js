@@ -1,35 +1,35 @@
 document.addEventListener("DOMContentLoaded", () => {
     fetchUsers();
   });
-  
+
   async function fetchUsers() {
     try {
-      const response = await fetch("/users");
+      const response = await fetch("/api/users");
       const users = await response.json();
       const tableBody = document.querySelector("#user-table tbody");
       tableBody.innerHTML = "";
-  
+
       users.forEach((user) => {
         const row = document.createElement("tr");
         const nameCell = document.createElement("td");
         const lastNameCell = document.createElement("td");
         const emailCell = document.createElement("td");
         const actionsCell = document.createElement("td");
-  
+
         nameCell.textContent = user.Jmeno;
         lastNameCell.textContent = user.Prijmeni;
         emailCell.textContent = user.Email;
-  
+
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
         deleteButton.className = "btn-delete";
         deleteButton.onclick = () => deleteUser(user.UzivatelID);
-  
+
         const editButton = document.createElement("button");
         editButton.textContent = "Edit";
         editButton.className = "btn-edit";
-        editButton.onclick = () => openEditModal(user);
-  
+        editButton.onclick = async () => await openEditModal(user);
+
         actionsCell.appendChild(deleteButton);
         actionsCell.appendChild(editButton);
         row.appendChild(nameCell);
@@ -42,11 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
       displayMessage("Error fetching users: " + error.message, "error");
     }
   }
-  
+
   async function deleteUser(userId) {
     if (confirm("Are you sure you want to delete this user?")) {
       try {
-        await fetch(`/users/${userId}`, {
+        await fetch(`/api/users/${userId}`, {
           method: "DELETE",
         });
         displayMessage("User deleted successfully!", "success");
@@ -56,30 +56,41 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-  
-  function openEditModal(user) {
+
+  async function openEditModal(user) {
     document.getElementById("edit-first-name").value = user.Jmeno;
     document.getElementById("edit-last-name").value = user.Prijmeni;
     document.getElementById("edit-email").value = user.Email;
-    
+
+    // Fetch the user by ID to get the RoleID
+    try {
+      const response = await fetch(`/api/users/${user.UzivatelID}`);
+      const userData = await response.json();
+      document.getElementById("edit-role-id").value = userData.RoleID;
+    } catch (error) {
+      displayMessage("Error fetching user details: " + error.message, "error");
+      return;
+    }
+
     document.getElementById("edit-modal").style.display = "block";
     document.getElementById("edit-modal").setAttribute("data-user-id", user.UzivatelID);
   }
-  
+
   function closeModal() {
     document.getElementById("edit-modal").style.display = "none";
   }
-  
+
   async function saveUserChanges() {
     const userId = document.getElementById("edit-modal").getAttribute("data-user-id");
     const updatedUser = {
       Jmeno: document.getElementById("edit-first-name").value,
       Prijmeni: document.getElementById("edit-last-name").value,
-      Email: document.getElementById("edit-email").value
+      Email: document.getElementById("edit-email").value,
+      RoleID: parseInt(document.getElementById("edit-role-id").value, 10)
     };
-  
+
     try {
-      await fetch(`/users/${userId}`, {
+      await fetch(`/api/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -93,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
       displayMessage("Error updating user: " + error.message, "error");
     }
   }
-  
+
   function displayMessage(message, type) {
     const messageContainer = document.getElementById("message-container");
     const messageDiv = document.createElement("div");
@@ -104,10 +115,9 @@ document.addEventListener("DOMContentLoaded", () => {
       messageContainer.removeChild(messageDiv);
     }, 3000);
   }
-  
+
   window.onclick = function(event) {
     if (event.target === document.getElementById("edit-modal")) {
       closeModal();
     }
   };
-  

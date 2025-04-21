@@ -1,6 +1,6 @@
 async function loadRole() {
     try {
-        const response = await axios.get("/roles");
+        const response = await axios.get("/api/roles");
         const roles = response.data;
 
         const roleSelect = document.getElementById("roleID");
@@ -26,12 +26,12 @@ document.getElementById("addUserForm").addEventListener("submit", function (even
 
     console.log("Form submission:", { jmeno, prijmeni, email, heslo, roleID });
 
-    fetch("/add-user", {
+    fetch("/api/users", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ jmeno, prijmeni, email, heslo, roleID }),
+        body: JSON.stringify({ Jmeno: jmeno, Prijmeni: prijmeni, Email: email, Heslo: heslo, RoleID: roleID }),
     })
         .then((response) => {
             if (response.ok) {

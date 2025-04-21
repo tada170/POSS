@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         const categoryName = document.getElementById('categoryName').value.trim();
 
-        fetch('/addCategory', {
+        fetch('/api/categories', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -15,14 +15,21 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify({ Nazev: categoryName })
         })
             .then(async response => {
-                const data = await response.json();
-                if (response.ok) {
-                    successMessage.textContent = data.message || "Category added successfully!";
-                    successMessage.style.display = 'block';
-                    errorMessage.style.display = 'none';
-                    addCategoryForm.reset();
-                } else {
-                    errorMessage.textContent = data.error || "Failed to add category.";
+                try {
+                    const data = await response.json();
+                    if (response.ok) {
+                        successMessage.textContent = data.message || "Category added successfully!";
+                        successMessage.style.display = 'block';
+                        errorMessage.style.display = 'none';
+                        addCategoryForm.reset();
+                    } else {
+                        errorMessage.textContent = data.error || "Failed to add category.";
+                        errorMessage.style.display = 'block';
+                        successMessage.style.display = 'none';
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing response:', parseError);
+                    errorMessage.textContent = "Failed to add category. Server returned an invalid response.";
                     errorMessage.style.display = 'block';
                     successMessage.style.display = 'none';
                 }

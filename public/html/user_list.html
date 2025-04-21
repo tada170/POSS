@@ -76,13 +76,14 @@
                     <label for="edit-email">Email:</label>
                     <input type="email" id="edit-email" name="email" required>
                 </div>
+                <input type="hidden" id="edit-role-id" name="roleId">
                 <button type="button" onclick="saveUserChanges()">Save Changes</button>
             </form>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="/script/user_list.js"></script>
-    <script src="/script/logout.js"></script>
+    <script src="/script/user/management.js"></script>
+    <script src="/script/utility/session_timeout.js"></script>
 
 </body>
 

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchProducts() {
     try {
-        const response = await fetch('/products-listed');
+        const response = await fetch('/api/products/with-allergens');
         const products = await response.json();
         const tableBody = document.querySelector('#product-table tbody');
         tableBody.innerHTML = '';
@@ -62,7 +62,7 @@ async function fetchProducts() {
 
 async function loadAllergens() {
     try {
-        const response = await axios.get('/allergens');
+        const response = await axios.get('/api/allergens');
         allergensList = response.data;
         populateAllergenDropdown();
     } catch (error) {
@@ -159,7 +159,7 @@ document.getElementById('editForm').onsubmit = async function (event) {
     const allergenIds = selectedAllergens.map(allergen => allergen.id).filter(id => id);
 
     try {
-        await axios.put(`/products/${productId}`, {
+        await axios.put(`/api/products/${productId}`, {
             Nazev: productName,
             Cena: productPrice,
             Alergeny: allergenIds
@@ -175,7 +175,7 @@ document.getElementById('editForm').onsubmit = async function (event) {
 async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product?')) {
         try {
-            await axios.delete(`http://localhost:3000/products/${productId}`);
+            await axios.delete(`/api/products/${productId}`);
             displayMessage('Product deleted successfully!', 'success');
             fetchProducts();
         } catch (error) {

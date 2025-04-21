@@ -1,10 +1,11 @@
 const sql = require('mssql')
-require("dotenv").config({ path: "../.env" });
+const path = require('path');
+require("dotenv").config({ path: path.resolve(__dirname, '../.env') });
 
 const config = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    server: process.env.DB_SERVER,
+    server: process.env.DB_SERVER || '193.85.203.188', // Provide default if env var is missing
     database: process.env.DB_DATABASE,
     options: {
         enableArithAbort: process.env.DB_ENABLE_ARITH_ABORT === "true",
