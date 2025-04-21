@@ -1,60 +1,61 @@
+/**
+ * Main server file
+ */
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const sql = require("mssql");
 const path = require("path");
-require("dotenv").config({ path: "../.env" });
 const session = require('express-session');
-const projectPath = path.join(__dirname, "..");
+require("dotenv").config();
+
+// Import routes
+const pageRoutes = require("./routes/pages");
+const apiRoutes = require("./routes/api");
+
+// Create Express app
 const app = express();
-const port = 3000;
-const { poolPromise } = require("./db_conn");
-const { defineHTMLEndpoints } = require("./pages");
-const { defineAPIEndpoints } = require("./api/api")
+const port = process.env.PORT || 3000;
 
-
-const isAuthenticated = (req, res, next) => {
-  if (req.session && req.session.userId) {
-    console.log('User is authenticated');
-    return next();
-  } else {
-    console.log('User is not authenticated, redirecting to login');
-    return res.redirect('/login');
-  }
-};
-
-const hasRole = (roles) => {
-  return (req, res, next) => {
-    if (req.session.role && roles.includes(req.session.role)) {
-      return next();
-    }
-    res.status(403).send("Forbidden: You do not have access to this page");
-  };
-};
-
+// Configure app
 configureApp(app);
-defineHTMLEndpoints(app, isAuthenticated);
-defineAPIEndpoints(app, poolPromise);
+
+// Register routes
+app.use("/", pageRoutes);
+app.use("/api", apiRoutes);
+
+// Start server
 startServer(app);
 
-function configureApp(aplication) {
-  aplication.use(session({
-    secret: 'secret_key',
+/**
+ * Configure Express app with middleware
+ */
+function configureApp(application) {
+  // Session middleware
+  application.use(session({
+    secret: process.env.SESSION_SECRET || 'secret_key',
     resave: false,             
     saveUninitialized: false,   
     cookie: {
       httpOnly: true,         
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
     }
   }));
   
-  aplication.use(express.static(path.join(projectPath, "public")));
-  aplication.use(cors());
-  aplication.use(bodyParser.json());
+  // Static files middleware
+  application.use(express.static(path.join(__dirname, "..", "public")));
+  
+  // API middleware
+  application.use(cors());
+  application.use(bodyParser.json());
 }
 
-function startServer(aplication) {
-  aplication.listen(port, () => {
+/**
+ * Start the Express server
+ */
+function startServer(application) {
+  application.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
   });
 }
+
+module.exports = app; // Export for testing

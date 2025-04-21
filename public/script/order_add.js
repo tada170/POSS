@@ -105,6 +105,9 @@ async function renderOrders(orders) {
     for (const order of Object.values(orders)) {
         const orderItem = document.createElement("div");
         orderItem.className = "order-item";
+        if (order.Zaplaceno) {
+            orderItem.classList.add("paid");
+        }
         orderItem.dataset.transakceId = order.TransakceID;
 
         const titleContainer = document.createElement("div");
@@ -133,32 +136,38 @@ async function renderOrders(orders) {
 
 
 function groupOrders(data) {
+    console.log(data);
     return data.reduce((acc, item) => {
         const transakceID = item.TransakceID;
+
         if (!acc[transakceID]) {
             acc[transakceID] = {
                 TransakceID: transakceID,
                 Nazev: item.TransakceNazev || "Unknown Order",
                 UzivatelJmeno: item.UzivatelJmeno || "Unknown User",
                 DatumTransakce: item.DatumTransakce || "Unknown Date",
+                Zaplaceno: item.Zaplaceno || false,
                 Items: []
             };
         }
+
         if (item.Items.length > 0) {
-            item.Items.forEach(
-                item => acc[transakceID].Items.push({
-                    ProduktID: item.ProduktID,
-                    ProduktNazev: item.ProduktNazev || "Unnamed Product",
-                    Mnozstvi: item.Mnozstvi || 0,
-                    Cena: item.Cena || 0,
-                    Zaplaceno: item.Zaplaceno || false,
-                    Alergeny: item.Alergeny || []
-                })
-            )
+            item.Items.forEach(subItem => {
+                acc[transakceID].Items.push({
+                    ProduktID: subItem.ProduktID,
+                    ProduktNazev: subItem.ProduktNazev || "Unnamed Product",
+                    Mnozstvi: subItem.Mnozstvi || 0,
+                    Cena: subItem.Cena || 0,
+                    Zaplaceno: subItem.Zaplaceno || false,
+                    Alergeny: subItem.Alergeny || []
+                });
+            });
         }
+
         return acc;
     }, {});
 }
+
 
 async function renderOrderItems(order) {
     const itemList = document.createElement("div");
